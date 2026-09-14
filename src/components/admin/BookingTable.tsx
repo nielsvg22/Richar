@@ -26,7 +26,12 @@ export default function BookingTable({ bookings }: { bookings: Booking[] }) {
         </thead>
         <tbody>
           {bookings.map((booking) => (
-            <tr key={booking.id} className="border-b border-ink/5 last:border-0 hover:bg-cream-soft">
+            <tr
+              key={booking.id}
+              className={`border-b border-ink/5 last:border-0 hover:bg-cream-soft ${
+                !booking.viewedAt ? "bg-coral-soft/40" : ""
+              }`}
+            >
               <td className="px-6 py-4">
                 <Link href={`/admin/boekingen/${booking.id}`} className="block">
                   {new Date(booking.date).toLocaleDateString("nl-NL", {
@@ -36,8 +41,13 @@ export default function BookingTable({ bookings }: { bookings: Booking[] }) {
                 </Link>
               </td>
               <td className="px-6 py-4">
-                <Link href={`/admin/boekingen/${booking.id}`} className="block font-semibold">
+                <Link href={`/admin/boekingen/${booking.id}`} className="flex items-center gap-2 font-semibold">
                   {booking.childName} ({booking.childAge})
+                  {!booking.viewedAt && (
+                    <span className="inline-flex items-center rounded-full bg-coral px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                      Nieuw
+                    </span>
+                  )}
                 </Link>
               </td>
               <td className="px-6 py-4">

@@ -111,6 +111,30 @@ export async function sendVoucherEmail(voucher: Voucher) {
   return send(voucher.purchaserEmail, "Jullie cadeaubon is onderweg! 🎁", html);
 }
 
+export async function sendInternalBookingNotification(booking: Booking, origin?: string) {
+  const settings = getSettings();
+  const to = settings.emailReplyTo || "hallo@rosaencharlotte.nl";
+
+  const html = wrapper(
+    "🎉 Nieuwe boeking binnengekomen",
+    `
+    <p>Er is zojuist een nieuwe boeking binnengekomen.</p>
+    <table style="width:100%;border-collapse:collapse;margin:20px 0;font-size:14px;">
+      <tr><td style="padding:6px 0;color:#6b6259;">Boekingsnummer</td><td style="padding:6px 0;text-align:right;font-weight:bold;">${booking.id}</td></tr>
+      <tr><td style="padding:6px 0;color:#6b6259;">Thema</td><td style="padding:6px 0;text-align:right;">${booking.themeName}</td></tr>
+      <tr><td style="padding:6px 0;color:#6b6259;">Datum</td><td style="padding:6px 0;text-align:right;">${formatDate(booking.date)}</td></tr>
+      <tr><td style="padding:6px 0;color:#6b6259;">Ouder</td><td style="padding:6px 0;text-align:right;">${booking.parentName}</td></tr>
+      <tr><td style="padding:6px 0;color:#6b6259;">Totaal</td><td style="padding:6px 0;text-align:right;font-weight:bold;color:#F28F79;">€${booking.totalPrice}</td></tr>
+    </table>
+    <p style="margin-top:20px;">
+      <a href="${siteUrl(origin)}/admin/boekingen/${booking.id}" style="display:inline-block;background:#292522;color:#ffffff;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:bold;">Bekijk in admin</a>
+    </p>
+    `
+  );
+
+  return send(to, `Nieuwe boeking: ${booking.themeName} (${booking.id})`, html);
+}
+
 export async function sendBookingConfirmation(booking: Booking, origin?: string) {
   const extrasList = booking.extras
     .map((id) => getExtra(id)?.name)
@@ -200,4 +224,33 @@ export async function sendContactAutoReply(name: string, email: string) {
     `
   );
   return send(email, "We hebben je bericht ontvangen", html);
+}
+
+export async function sendInternalContactNotification(request: {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+}, origin?: string) {
+  const settings = getSettings();
+  const to = settings.emailReplyTo || "hallo@rosaencharlotte.nl";
+
+  const html = wrapper(
+    "📬 Nieuw bericht binnengekomen",
+    `
+    <p>Er staat een nieuw bericht klaar in de admin.</p>
+    <table style="width:100%;border-collapse:collapse;margin:20px 0;font-size:14px;">
+      <tr><td style="padding:6px 0;color:#6b6259;">Naam</td><td style="padding:6px 0;text-align:right;font-weight:bold;">${request.name}</td></tr>
+      <tr><td style="padding:6px 0;color:#6b6259;">E-mail</td><td style="padding:6px 0;text-align:right;">${request.email}</td></tr>
+      ${request.phone ? `<tr><td style="padding:6px 0;color:#6b6259;">Telefoon</td><td style="padding:6px 0;text-align:right;">${request.phone}</td></tr>` : ""}
+    </table>
+    <p style="white-space:pre-wrap;background:#FFF4E6;border-radius:16px;padding:16px;">${request.message}</p>
+    <p style="margin-top:20px;">
+      <a href="${siteUrl(origin)}/admin/berichten" style="display:inline-block;background:#292522;color:#ffffff;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:bold;">Bekijk in admin</a>
+    </p>
+    `
+  );
+
+  return send(to, `Nieuw bericht van ${request.name}`, html);
 }

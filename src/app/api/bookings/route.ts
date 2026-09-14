@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getBookings, saveBooking, recordEmailSent, type Booking } from "@/lib/bookings";
 import { getTheme } from "@/lib/themes";
 import { getPackage, getExtra, EXTRA_CHILD_PRICE } from "@/lib/pricing";
-import { sendBookingConfirmation } from "@/lib/email";
+import { sendBookingConfirmation, sendInternalBookingNotification } from "@/lib/email";
 import { isBookable } from "@/lib/availability";
 import { validateDiscount, incrementDiscountUsage } from "@/lib/discounts";
 import { validateVoucher, redeemVoucherAmount } from "@/lib/vouchers";
@@ -121,6 +121,7 @@ export async function POST(request: NextRequest) {
     status: "Nieuw",
     emailsSent: [],
     internalNotes: "",
+    viewedAt: null,
   };
 
   saveBooking(booking);
@@ -137,6 +138,7 @@ export async function POST(request: NextRequest) {
     recordEmailSent(booking.id, "confirmation");
     booking.emailsSent = ["confirmation"];
   }
+  await sendInternalBookingNotification(booking, request.nextUrl.origin);
 
   return NextResponse.json(booking, { status: 201 });
 }

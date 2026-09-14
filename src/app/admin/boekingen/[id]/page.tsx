@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getBooking } from "@/lib/bookings";
+import { getBooking, markBookingViewed } from "@/lib/bookings";
 import { getExtra } from "@/lib/pricing";
 import BookingActions from "@/components/admin/BookingActions";
 import InternalNotesEditor from "@/components/admin/InternalNotesEditor";
@@ -19,8 +19,9 @@ export default async function BookingDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const booking = getBooking(id);
-  if (!booking) notFound();
+  const existing = getBooking(id);
+  if (!existing) notFound();
+  const booking = markBookingViewed(id) ?? existing;
 
   return (
     <div>

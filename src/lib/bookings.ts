@@ -43,6 +43,7 @@ export type Booking = {
   status: BookingStatus;
   emailsSent: EmailType[];
   internalNotes: string;
+  viewedAt: string | null;
 };
 
 export type EmailType = "confirmation" | "reminder" | "review";
@@ -143,6 +144,19 @@ export function setInternalNotes(id: string, notes: string) {
   return booking;
 }
 
+export function markBookingViewed(id: string) {
+  const bookings = ensureStore();
+  const booking = bookings.find((b) => b.id === id);
+  if (!booking || booking.viewedAt) return booking;
+  booking.viewedAt = new Date().toISOString();
+  fs.writeFileSync(DATA_FILE, JSON.stringify(bookings, null, 2));
+  return booking;
+}
+
+export function countUnviewedBookings(): number {
+  return ensureStore().filter((b) => !b.viewedAt && b.status !== "Geannuleerd").length;
+}
+
 export function recordEmailSent(id: string, type: EmailType) {
   const bookings = ensureStore();
   const booking = bookings.find((b) => b.id === id);
@@ -195,6 +209,7 @@ function seedBookings(): Booking[] {
       customerId: null,
       emailsSent: [],
       internalNotes: "",
+      viewedAt: null,
     },
     {
       id: "RC-1043",
@@ -230,6 +245,7 @@ function seedBookings(): Booking[] {
       customerId: null,
       emailsSent: [],
       internalNotes: "",
+      viewedAt: null,
     },
     {
       id: "RC-1044",
@@ -265,6 +281,7 @@ function seedBookings(): Booking[] {
       customerId: null,
       emailsSent: [],
       internalNotes: "",
+      viewedAt: null,
     },
     {
       id: "RC-1045",
@@ -300,6 +317,7 @@ function seedBookings(): Booking[] {
       customerId: null,
       emailsSent: [],
       internalNotes: "",
+      viewedAt: null,
     },
     {
       id: "RC-1046",
@@ -335,6 +353,7 @@ function seedBookings(): Booking[] {
       customerId: null,
       emailsSent: [],
       internalNotes: "",
+      viewedAt: null,
     },
   ];
 }
