@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTheme, updateTheme, deleteTheme } from "@/lib/themes";
+import { requireAdminApi } from "@/lib/adminAuth";
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  const denied = await requireAdminApi();
+  if (denied) return denied;
+
   const { slug } = await params;
   const theme = await getTheme(slug);
   if (!theme) {
@@ -17,6 +21,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  const denied = await requireAdminApi();
+  if (denied) return denied;
+
   const { slug } = await params;
   const body = await request.json();
 
@@ -59,6 +66,9 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  const denied = await requireAdminApi();
+  if (denied) return denied;
+
   const { slug } = await params;
   const deleted = await deleteTheme(slug);
   if (!deleted) {

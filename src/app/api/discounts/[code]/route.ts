@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateDiscount, deleteDiscount } from "@/lib/discounts";
+import { requireAdminApi } from "@/lib/adminAuth";
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ code: string }> }
 ) {
+  const denied = await requireAdminApi();
+  if (denied) return denied;
+
   const { code } = await params;
   const body = await request.json();
   const { type, value, description, active, expiresAt, usageLimit } = body;
@@ -28,6 +32,9 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ code: string }> }
 ) {
+  const denied = await requireAdminApi();
+  if (denied) return denied;
+
   const { code } = await params;
   const deleted = await deleteDiscount(code);
   if (!deleted) {

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSettings, updateSettings, maskApiKey } from "@/lib/settings";
+import { requireAdminApi } from "@/lib/adminAuth";
 
 export async function GET() {
+  const denied = await requireAdminApi();
+  if (denied) return denied;
+
   const settings = await getSettings();
   return NextResponse.json({
     ...settings,
@@ -13,6 +17,9 @@ export async function GET() {
 }
 
 export async function PATCH(request: NextRequest) {
+  const denied = await requireAdminApi();
+  if (denied) return denied;
+
   const body = await request.json();
   const { resendApiKey, emailFrom, emailReplyTo, mollieApiKey } = body;
 

@@ -1,10 +1,15 @@
+import { redirect } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { countUnviewedBookings } from "@/lib/bookings";
 import { countUnviewedContactRequests } from "@/lib/contactRequests";
+import { isAdminAuthenticated } from "@/lib/adminAuth";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const authenticated = await isAdminAuthenticated();
+  if (!authenticated) redirect("/admin/inloggen");
+
   const unviewedBookings = await countUnviewedBookings();
   const unviewedMessages = await countUnviewedContactRequests();
 

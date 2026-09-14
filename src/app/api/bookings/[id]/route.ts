@@ -5,6 +5,7 @@ import {
   setInternalNotes,
   type BookingStatus,
 } from "@/lib/bookings";
+import { requireAdminApi } from "@/lib/adminAuth";
 
 const VALID_STATUSES: BookingStatus[] = [
   "Nieuw",
@@ -19,6 +20,9 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const denied = await requireAdminApi();
+  if (denied) return denied;
+
   const { id } = await params;
   const booking = await getBooking(id);
   if (!booking) {
@@ -31,6 +35,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const denied = await requireAdminApi();
+  if (denied) return denied;
+
   const { id } = await params;
   const body = await request.json();
 

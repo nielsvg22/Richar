@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBooking, recordEmailSent, type EmailType } from "@/lib/bookings";
 import { sendBookingConfirmation, sendPartyReminder, sendReviewRequest } from "@/lib/email";
+import { requireAdminApi } from "@/lib/adminAuth";
 
 const SENDERS: Record<EmailType, typeof sendBookingConfirmation> = {
   confirmation: sendBookingConfirmation,
@@ -12,6 +13,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const denied = await requireAdminApi();
+  if (denied) return denied;
+
   const { id } = await params;
   const body = await request.json();
   const type = body.type as EmailType;

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getSettings, maskApiKey } from "@/lib/settings";
 import SettingsForm from "@/components/admin/SettingsForm";
+import AdminPasswordCard from "@/components/admin/AdminPasswordCard";
 
 export const metadata: Metadata = {
   title: "Instellingen",
@@ -19,7 +20,7 @@ export default async function InstellingenPage() {
         Beheer hier de instellingen voor het versturen van automatische e-mails.
       </p>
 
-      <div className="mt-8 max-w-2xl">
+      <div className="mt-8 max-w-2xl space-y-6">
         <SettingsForm
           initial={{
             resendApiKey: maskApiKey(settings.resendApiKey),
@@ -30,6 +31,7 @@ export default async function InstellingenPage() {
             mollieApiKeyConfigured: Boolean(settings.mollieApiKey),
           }}
         />
+        <AdminPasswordCard />
       </div>
     </div>
   );

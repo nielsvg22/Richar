@@ -6,8 +6,11 @@ import { sendBookingConfirmation, sendInternalBookingNotification } from "@/lib/
 import { isBookable } from "@/lib/availability";
 import { validateDiscount, incrementDiscountUsage } from "@/lib/discounts";
 import { validateVoucher, redeemVoucherAmount } from "@/lib/vouchers";
+import { requireAdminApi } from "@/lib/adminAuth";
 
 export async function GET() {
+  const denied = await requireAdminApi();
+  if (denied) return denied;
   return NextResponse.json(await getBookings());
 }
 

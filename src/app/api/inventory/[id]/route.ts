@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateInventoryItem, deleteInventoryItem } from "@/lib/inventory";
+import { requireAdminApi } from "@/lib/adminAuth";
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const denied = await requireAdminApi();
+  if (denied) return denied;
+
   const { id } = await params;
   const body = await request.json();
   const { name, quantity, unit, lowStockThreshold } = body;
@@ -26,6 +30,9 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const denied = await requireAdminApi();
+  if (denied) return denied;
+
   const { id } = await params;
   const deleted = await deleteInventoryItem(id);
   if (!deleted) {

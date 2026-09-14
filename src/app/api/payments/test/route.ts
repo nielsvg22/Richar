@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createMolliePayment, isMollieConfigured } from "@/lib/mollie";
+import { requireAdminApi } from "@/lib/adminAuth";
 
 export async function POST(request: NextRequest) {
+  const denied = await requireAdminApi();
+  if (denied) return denied;
+
   if (!(await isMollieConfigured())) {
     return NextResponse.json({ error: "Geen Mollie API key geconfigureerd." }, { status: 400 });
   }

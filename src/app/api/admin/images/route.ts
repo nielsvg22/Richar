@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSiteImageSlot, saveSiteImage } from "@/lib/siteImages";
+import { requireAdminApi } from "@/lib/adminAuth";
 
 const MAX_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
 export async function POST(request: NextRequest) {
+  const denied = await requireAdminApi();
+  if (denied) return denied;
+
   const formData = await request.formData();
   const slotId = formData.get("slotId");
   const file = formData.get("file");

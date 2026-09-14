@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendTestEmail } from "@/lib/email";
+import { requireAdminApi } from "@/lib/adminAuth";
 
 export async function POST(request: NextRequest) {
+  const denied = await requireAdminApi();
+  if (denied) return denied;
+
   const body = await request.json();
   const { email } = body;
 

@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getThemes, createTheme, type Theme } from "@/lib/themes";
+import { requireAdminApi } from "@/lib/adminAuth";
 
 export async function GET() {
+  const denied = await requireAdminApi();
+  if (denied) return denied;
   return NextResponse.json(await getThemes());
 }
 
 export async function POST(request: NextRequest) {
+  const denied = await requireAdminApi();
+  if (denied) return denied;
+
   const body = await request.json();
   const {
     name,

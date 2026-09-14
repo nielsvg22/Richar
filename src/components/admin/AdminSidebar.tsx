@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const links = [
   { href: "/admin", label: "Dashboard", emoji: "📊", badgeKey: "unviewedBookings" },
@@ -25,7 +25,14 @@ export default function AdminSidebar({
   unviewedMessages?: number;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const badgeValues: Record<string, number> = { unviewedBookings, unviewedMessages };
+
+  async function handleLogout() {
+    await fetch("/api/admin/auth/logout", { method: "POST" });
+    router.push("/admin/inloggen");
+    router.refresh();
+  }
 
   return (
     <aside className="flex w-full flex-col gap-1 border-b border-ink/10 bg-white p-4 print:hidden md:h-screen md:w-64 md:flex-shrink-0 md:border-b-0 md:border-r md:p-6">
@@ -63,6 +70,14 @@ export default function AdminSidebar({
           );
         })}
       </nav>
+      <button
+        type="button"
+        onClick={handleLogout}
+        className="mt-2 flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink-soft hover:bg-cream-soft"
+      >
+        <span>🚪</span>
+        Uitloggen
+      </button>
     </aside>
   );
 }
