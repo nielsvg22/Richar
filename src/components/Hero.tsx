@@ -1,10 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getSiteImageSlot, siteImageUrl } from "@/lib/siteImages";
+import { getSiteContentMap } from "@/lib/siteContent";
 
 export default async function Hero() {
   const heroSlot = getSiteImageSlot("hero");
   const heroImageUrl = heroSlot ? await siteImageUrl(heroSlot) : null;
+  const content = await getSiteContentMap();
 
   return (
     <section className="relative overflow-hidden">
@@ -24,20 +26,16 @@ export default async function Hero() {
       <div className="relative mx-auto grid max-w-7xl gap-12 px-5 pb-16 pt-14 sm:px-8 sm:pt-20 lg:grid-cols-2 lg:items-center lg:pb-24 lg:pt-24">
         <div className="reveal">
           <span className="inline-flex items-center gap-2 rounded-full bg-pink-soft px-4 py-2 text-sm font-semibold text-ink/80">
-            🎈 Kinderfeestjes van 4 t/m 12 jaar
+            {content["home.hero.badge"]}
           </span>
           <h1 className="mt-6 font-heading text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
-            Het leukste
+            {content["home.hero.title1"]}
             <br />
-            kinderfeestje?
+            {content["home.hero.title2"]}
             <br />
-            <span className="text-coral">Dat regelen wij.</span>
+            <span className="text-coral">{content["home.hero.title3"]}</span>
           </h1>
-          <p className="mt-6 max-w-lg text-lg text-ink-soft">
-            Rosa &amp; Charlotte organiseren creatieve, vrolijke en compleet
-            verzorgde kinderfeestjes. Jij geniet van de verjaardag, wij
-            regelen de rest.
-          </p>
+          <p className="mt-6 max-w-lg text-lg text-ink-soft">{content["home.hero.subtitle"]}</p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Link
               href="/feestjes"
@@ -63,7 +61,7 @@ export default async function Hero() {
                 </span>
               ))}
             </div>
-            <p>500+ vrolijke feestjes georganiseerd</p>
+            <p>{content["home.hero.stat"]}</p>
           </div>
         </div>
 

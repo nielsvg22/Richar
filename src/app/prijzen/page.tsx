@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PricingSection from "@/components/PricingSection";
 import CTASection from "@/components/CTASection";
 import { extras, EXTRA_CHILD_PRICE } from "@/lib/pricing";
+import { getSiteContentMap } from "@/lib/siteContent";
 
 export const metadata: Metadata = {
   title: "Prijzen",
@@ -9,28 +10,27 @@ export const metadata: Metadata = {
     "Transparante prijzen voor kinderfeestjes: Mini vanaf €149, Fun vanaf €199 en Deluxe vanaf €299. Geen verborgen kosten, alles inclusief.",
 };
 
-export default function PrijzenPage() {
+export const dynamic = "force-dynamic";
+
+export default async function PrijzenPage() {
+  const content = await getSiteContentMap();
+
   return (
     <>
       <section className="mx-auto max-w-7xl px-5 pt-14 text-center sm:px-8 sm:pt-20">
         <h1 className="font-heading text-4xl font-extrabold sm:text-5xl">
-          Transparante prijzen,
-          <br className="hidden sm:block" /> geen verrassingen
+          {content["prijzen.title1"]}
+          <br className="hidden sm:block" /> {content["prijzen.title2"]}
         </h1>
-        <p className="mx-auto mt-4 max-w-xl text-ink-soft">
-          Onze pakketten zijn all-in. Wil je nog iets extra&apos;s? Dat kan
-          altijd, met duidelijke prijzen vooraf.
-        </p>
+        <p className="mx-auto mt-4 max-w-xl text-ink-soft">{content["prijzen.subtitle"]}</p>
       </section>
 
       <PricingSection />
 
       <section className="mx-auto max-w-4xl px-5 pb-20 sm:px-8">
         <div className="rounded-[2.5rem] bg-white p-8 sm:p-10">
-          <h2 className="font-heading text-2xl font-bold">Extra&apos;s</h2>
-          <p className="mt-2 text-ink-soft">
-            Maak je feestje nog completer met onderstaande extra&apos;s.
-          </p>
+          <h2 className="font-heading text-2xl font-bold">{content["prijzen.extras.title"]}</h2>
+          <p className="mt-2 text-ink-soft">{content["prijzen.extras.subtitle"]}</p>
           <div className="mt-6 divide-y divide-ink/10">
             {extras.map((extra) => (
               <div

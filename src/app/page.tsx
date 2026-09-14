@@ -9,12 +9,14 @@ import FAQAccordion from "@/components/FAQAccordion";
 import CTASection from "@/components/CTASection";
 import { getThemes } from "@/lib/themes";
 import { faqItems } from "@/lib/faq";
+import { getSiteContentMap } from "@/lib/siteContent";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const themes = await getThemes();
+  const content = await getSiteContentMap();
   const homeThemes = [
     ...themes.filter((t) => t.featured),
     ...themes.filter((t) => !t.featured),
@@ -28,7 +30,7 @@ export default async function Home() {
       <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
           <h2 className="font-heading text-3xl font-extrabold sm:text-4xl">
-            Welk feestje past bij jouw jarige?
+            {content["home.themes.title"]}
           </h2>
           <Link href="/feestjes" className="text-sm font-semibold text-coral">
             Bekijk alle feestjes →
@@ -46,7 +48,7 @@ export default async function Home() {
 
       <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
         <h2 className="text-center font-heading text-3xl font-extrabold sm:text-4xl">
-          Veelgestelde vragen
+          {content["home.faq.title"]}
         </h2>
         <div className="mt-12">
           <FAQAccordion items={faqItems.slice(0, 5)} />

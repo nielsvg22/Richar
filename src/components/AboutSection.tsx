@@ -1,12 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getSiteImageSlot, siteImageUrl } from "@/lib/siteImages";
+import { getSiteContentMap } from "@/lib/siteContent";
 
 export default async function AboutSection() {
   const jungleSlot = getSiteImageSlot("team-jungle-party");
   const officeSlot = getSiteImageSlot("team-office");
   const jungleUrl = (jungleSlot && (await siteImageUrl(jungleSlot))) || "/images/team-jungle-party.jpg";
   const officeUrl = (officeSlot && (await siteImageUrl(officeSlot))) || "/images/team-office.jpg";
+  const content = await getSiteContentMap();
 
   return (
     <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
@@ -42,19 +44,10 @@ export default async function AboutSection() {
 
         <div>
           <h2 className="font-heading text-3xl font-extrabold sm:text-4xl">
-            Hoi! Wij zijn Rosa &amp; Charlotte 👋
+            {content["home.about.title"]}
           </h2>
-          <p className="mt-6 text-ink-soft">
-            Wij zijn twee enthousiaste ondernemers met één missie: van ieder
-            kinderfeestje een herinnering maken waar kinderen én ouders nog
-            lang over napraten.
-          </p>
-          <p className="mt-4 text-ink-soft">
-            We vinden het geweldig om thema&apos;s te bedenken, mooie
-            decoraties te maken en kinderen een middag vol plezier te
-            bezorgen. En misschien wel het belangrijkste: wij vinden dat een
-            kinderfeestje voor ouders óók leuk moet zijn.
-          </p>
+          <p className="mt-6 text-ink-soft">{content["home.about.text1"]}</p>
+          <p className="mt-4 text-ink-soft">{content["home.about.text2"]}</p>
           <Link
             href="/over-ons"
             className="mt-8 inline-flex items-center gap-2 rounded-full border-2 border-ink/10 px-6 py-3 text-sm font-semibold hover:border-coral hover:text-coral"

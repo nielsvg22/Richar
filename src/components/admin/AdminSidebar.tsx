@@ -13,6 +13,7 @@ const links = [
   { href: "/admin/facturen", label: "Facturen", emoji: "🧾", badgeKey: null },
   { href: "/admin/voorraad", label: "Voorraad", emoji: "📦", badgeKey: null },
   { href: "/admin/afbeeldingen", label: "Afbeeldingen", emoji: "🖼️", badgeKey: null },
+  { href: "/admin/content", label: "Teksten", emoji: "✏️", badgeKey: null },
   { href: "/admin/instellingen", label: "Instellingen", emoji: "⚙️", badgeKey: null },
   { href: "/", label: "Naar website", emoji: "🌐", badgeKey: null },
 ] as const;

@@ -3,6 +3,7 @@ import Image from "next/image";
 import CTASection from "@/components/CTASection";
 import ReviewSection from "@/components/ReviewSection";
 import { getSiteImageSlot, siteImageUrl } from "@/lib/siteImages";
+import { getSiteContentMap } from "@/lib/siteContent";
 
 export const metadata: Metadata = {
   title: "Over ons",
@@ -35,6 +36,7 @@ export default async function OverOnsPage() {
   const officeSlot = getSiteImageSlot("team-office");
   const jungleUrl = (jungleSlot && (await siteImageUrl(jungleSlot))) || "/images/team-jungle-party.jpg";
   const officeUrl = (officeSlot && (await siteImageUrl(officeSlot))) || "/images/team-office.jpg";
+  const content = await getSiteContentMap();
 
   return (
     <>
@@ -45,21 +47,10 @@ export default async function OverOnsPage() {
               👋 Over ons
             </span>
             <h1 className="mt-6 font-heading text-4xl font-extrabold leading-tight sm:text-5xl">
-              Wij zijn Rosa &amp; Charlotte
+              {content["overons.hero.title"]}
             </h1>
-            <p className="mt-6 text-lg text-ink-soft">
-              Wij leerden elkaar kennen tijdens het organiseren van een
-              verjaardagsfeest voor onze eigen kinderen &ndash; en merkten al
-              snel dat we allebei hetzelfde vonden: kinderfeestjes mogen best
-              wat meer glans hebben, zonder dat ouders zich rot moeten
-              organiseren.
-            </p>
-            <p className="mt-4 text-ink-soft">
-              Vanuit die gedachte startten we Rosa &amp; Charlotte
-              Kinderfeestjes. Inmiddels hebben we honderden feestjes vol
-              glitters, confetti en blije kindergezichten georganiseerd &ndash;
-              en dat aantal groeit iedere maand.
-            </p>
+            <p className="mt-6 text-lg text-ink-soft">{content["overons.hero.text1"]}</p>
+            <p className="mt-4 text-ink-soft">{content["overons.hero.text2"]}</p>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="relative aspect-[3/4] translate-y-8 overflow-hidden rounded-[2.5rem] blob">
@@ -88,7 +79,7 @@ export default async function OverOnsPage() {
 
       <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
         <h2 className="text-center font-heading text-3xl font-extrabold sm:text-4xl">
-          Waar wij voor staan
+          {content["overons.values.title"]}
         </h2>
         <div className="mt-12 grid gap-6 sm:grid-cols-3">
           {values.map((value) => (
@@ -106,8 +97,7 @@ export default async function OverOnsPage() {
       <section className="mx-auto max-w-7xl px-5 pb-4 sm:px-8">
         <div className="rounded-[3rem] bg-lavender-soft p-10 text-center sm:p-16">
           <p className="mx-auto max-w-2xl font-heading text-2xl font-bold leading-snug sm:text-3xl">
-            &ldquo;Wij vinden dat een kinderfeestje voor ouders óók leuk moet
-            zijn.&rdquo;
+            &ldquo;{content["overons.quote.text"]}&rdquo;
           </p>
           <p className="mt-4 text-sm font-semibold text-ink/60">
             &mdash; Rosa &amp; Charlotte
