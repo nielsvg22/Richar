@@ -1,0 +1,281 @@
+export type Theme = {
+  slug: string;
+  name: string;
+  emoji: string;
+  tagline: string;
+  description: string;
+  longDescription: string;
+  ageRange: string;
+  vanaf: number;
+  gradient: string;
+  activities: string[];
+  includes: string[];
+  featured: boolean;
+};
+
+export const themes: Theme[] = [
+  {
+    slug: "prinsessenfeest",
+    name: "Prinsessenfeest",
+    emoji: "👑",
+    tagline: "Voor de jarige die zich een dag lang koningin voelt",
+    description:
+      "Een sprookjesachtig feest vol jurken, kronen en een heus paleisbal.",
+    longDescription:
+      "Van de aankleding tot de kroningsceremonie: dit feest draait om één ding, de jarige laten stralen als een échte prinses. We versieren de ruimte met zachte pastelkleuren, gouden accenten en een heus 'paleis-decor'. De kinderen maken hun eigen kroon, leren een mini-dans en sluiten af met een prinsessenparade.",
+    ageRange: "4 - 8 jaar",
+    vanaf: 149,
+    gradient: "from-pink to-lavender-soft",
+    activities: [
+      "Kroon en sieraden knutselen",
+      "Prinsessendans instuderen",
+      "Paleisbal met muziek",
+      "Fotomoment op de 'rode loper'",
+    ],
+    includes: [
+      "Prinsessendecoratie",
+      "Kronen en accessoires per kind",
+      "Begeleiding door Rosa of Charlotte",
+      "Klein cadeautje voor de jarige",
+    ],
+    featured: false,
+  },
+  {
+    slug: "beautyfeest",
+    name: "Beautyfeest",
+    emoji: "💅",
+    tagline: "Glitters, nagellak en een echte glamourshoot",
+    description:
+      "Een verwenmiddag met make-up, nagellak en een glitterfotoshoot.",
+    longDescription:
+      "De kinderen worden omgetoverd tot echte sterren. Met kindvriendelijke, huidvriendelijke make-up en nagellak gaan we los, gevolgd door een glamoureuze fotoshoot met een echte flitsachtergrond. Alle meiden (en jongens die willen glitteren) gaan trots naar huis.",
+    ageRange: "5 - 12 jaar",
+    vanaf: 199,
+    gradient: "from-pink to-coral-soft",
+    activities: [
+      "Make-up en glitter tattoos",
+      "Nagellak in eigen kleur",
+      "Glamour fotoshoot",
+      "Modeshow voor de ouders",
+    ],
+    includes: [
+      "Professionele make-up sets",
+      "Fotoshoot met props",
+      "Themadecoratie",
+      "Traktatie en cadeautje",
+    ],
+    featured: true,
+  },
+  {
+    slug: "unicornfeest",
+    name: "Unicornfeest",
+    emoji: "🦄",
+    tagline: "Een magische middag vol regenboogkleuren",
+    description:
+      "Unicorns, regenbogen en glitter: het meest gevraagde feest van het jaar.",
+    longDescription:
+      "Dit is al jaren het populairste thema. We toveren de ruimte om tot een magisch unicornlandschap met regenboogslingers, ballonnenbogen en glitterdetails. De kinderen knutselen hun eigen unicornhoorn, doen een unicorn-speurtocht en sluiten af met regenboogcupcakes.",
+    ageRange: "4 - 9 jaar",
+    vanaf: 199,
+    gradient: "from-lavender to-pink-soft",
+    activities: [
+      "Unicornhoorn knutselen",
+      "Regenboog-speurtocht",
+      "Unicorn dansspel",
+      "Versieren van cupcakes",
+    ],
+    includes: [
+      "Unicorn thema-decoratie",
+      "Ballonnenboog in regenboogkleuren",
+      "Knutselmaterialen",
+      "Cadeautje voor de jarige",
+    ],
+    featured: true,
+  },
+  {
+    slug: "knutselfeest",
+    name: "Knutselfeest",
+    emoji: "🎨",
+    tagline: "Voor de creatieve jarige die graag met de handen bezig is",
+    description:
+      "Schilderen, kleien en knutselen onder begeleiding van creatieve pro's.",
+    longDescription:
+      "Ieder kind gaat naar huis met een eigen kunstwerk. We werken met verf, klei, glitters en natuurlijke materialen, aangepast aan de leeftijd van de groep. Rustig, creatief en verrassend gezellig — ook voor de wat stillere kinderen.",
+    ageRange: "4 - 10 jaar",
+    vanaf: 149,
+    gradient: "from-yellow-soft to-mint-soft",
+    activities: [
+      "Schilderen op canvas",
+      "Klei-workshop",
+      "Sieraden maken",
+      "Eigen kunstwerk inlijsten",
+    ],
+    includes: [
+      "Alle knutselmaterialen",
+      "Werkschorten",
+      "Begeleiding stap voor stap",
+      "Cadeautje voor de jarige",
+    ],
+    featured: false,
+  },
+  {
+    slug: "bakfeest",
+    name: "Bakfeest",
+    emoji: "🧁",
+    tagline: "Cupcakes versieren, deeg kneden en samen proeven",
+    description:
+      "Een gezellig bakfeest waarbij de kinderen hun eigen lekkernijen maken.",
+    longDescription:
+      "Onder begeleiding bakken en versieren de kinderen hun eigen cupcakes en koekjes. Alles verloopt kindvriendelijk en hygiënisch, met kant-en-klaar beslag zodat er geen wachttijd is. Aan het einde neemt iedereen een doosje zelfgemaakte lekkernijen mee naar huis.",
+    ageRange: "5 - 11 jaar",
+    vanaf: 199,
+    gradient: "from-peach to-yellow-soft",
+    activities: [
+      "Cupcakes versieren",
+      "Koekjes bakken en decoreren",
+      "Bakwedstrijdje",
+      "Eigen bakdoosje samenstellen",
+    ],
+    includes: [
+      "Alle bakbenodigdheden",
+      "Bakschorten en mutsjes",
+      "Decoratiemateriaal",
+      "Eigen bakdoosje om mee te nemen",
+    ],
+    featured: false,
+  },
+  {
+    slug: "dansfeest",
+    name: "TikTok & Dansfeest",
+    emoji: "💃",
+    tagline: "De populairste dansjes en een heuse videoclip",
+    description: "Dansen op de nieuwste TikTok-hits en een eigen videoclip maken.",
+    longDescription:
+      "Een energiek feest voor de jarige die graag beweegt. We leren samen de bekendste TikTok-dansjes, houden een mini-dansbattle en filmen een eigen videoclip die de kinderen mee naar huis krijgen.",
+    ageRange: "6 - 12 jaar",
+    vanaf: 199,
+    gradient: "from-coral-soft to-lavender-soft",
+    activities: [
+      "TikTok-dansjes instuderen",
+      "Dansbattle",
+      "Videoclip opnemen",
+      "Discofeest met lichteffecten",
+    ],
+    includes: [
+      "Professionele geluidsinstallatie",
+      "Dansbegeleiding",
+      "Videobestand voor thuis",
+      "Cadeautje voor de jarige",
+    ],
+    featured: true,
+  },
+  {
+    slug: "speurtocht",
+    name: "Speurtocht",
+    emoji: "🔎",
+    tagline: "Puzzels, aanwijzingen en een verborgen schat",
+    description:
+      "Een spannende speurtocht met raadsels, opdrachten en een échte schat.",
+    longDescription:
+      "Rosa en Charlotte bouwen een avontuurlijk verhaal rondom de speurtocht, passend bij het huis, de tuin of de gekozen locatie. De kinderen werken samen aan opdrachten en raadsels, tot ze uiteindelijk de verborgen schatkist vinden.",
+    ageRange: "6 - 12 jaar",
+    vanaf: 149,
+    gradient: "from-mint to-yellow-soft",
+    activities: [
+      "Speurtocht met opdrachten",
+      "Geheime code kraken",
+      "Teamwork-spellen",
+      "Schatkist openen",
+    ],
+    includes: [
+      "Compleet speurtocht-script op maat",
+      "Opdrachtkaarten en attributen",
+      "Schatkist met verrassingen",
+      "Cadeautje voor de jarige",
+    ],
+    featured: false,
+  },
+  {
+    slug: "wetenschapsfeest",
+    name: "Wetenschapsfeest",
+    emoji: "🧪",
+    tagline: "Proefjes, explosies van kleur en veel 'oooh's en 'aaah's'",
+    description:
+      "Een spectaculair feest vol leuke en veilige wetenschapsproefjes.",
+    longDescription:
+      "Van bruisende vulkanen tot zelfgemaakte slijm: dit feest zit vol verrassende, veilige proefjes die kinderen zelf mogen uitvoeren. Perfect voor de nieuwsgierige jarige die graag ontdekt hoe dingen werken.",
+    ageRange: "7 - 12 jaar",
+    vanaf: 199,
+    gradient: "from-mint-soft to-lavender-soft",
+    activities: [
+      "Vulkaan laten uitbarsten",
+      "Zelf slijm maken",
+      "Kleurrijke chemie-proefjes",
+      "Mini-diploma uitreiking",
+    ],
+    includes: [
+      "Alle proefjesmaterialen",
+      "Veiligheidsbrillen per kind",
+      "Begeleiding door een 'wetenschapper'",
+      "Cadeautje voor de jarige",
+    ],
+    featured: false,
+  },
+  {
+    slug: "dino-feest",
+    name: "Dino-feest",
+    emoji: "🦖",
+    tagline: "Een prehistorisch avontuur vol dinosaurussen",
+    description: "Fossielen opgraven, dino-eieren zoeken en brullen als een T-rex.",
+    longDescription:
+      "De kamer verandert in prehistorisch landschap vol jungle-decor. De kinderen gaan op expeditie, graven fossielen op uit zand en zoeken verstopte dino-eieren. Een avontuurlijk feest, ideaal voor kleine dino-fans.",
+    ageRange: "4 - 9 jaar",
+    vanaf: 149,
+    gradient: "from-mint to-peach-soft",
+    activities: [
+      "Fossielen opgraven",
+      "Dino-eieren zoektocht",
+      "Dino-masker knutselen",
+      "Prehistorisch groepsspel",
+    ],
+    includes: [
+      "Dino thema-decoratie",
+      "Opgraafmateriaal",
+      "Knutselpakket",
+      "Cadeautje voor de jarige",
+    ],
+    featured: false,
+  },
+  {
+    slug: "superheldenfeest",
+    name: "Superheldenfeest",
+    emoji: "🦸",
+    tagline: "Voor de jarige die de wereld wil redden",
+    description:
+      "Een actiefeest met een eigen superheldenkostuum en spannende missies.",
+    longDescription:
+      "Elk kind wordt in dit feest een echte superheld. We maken samen een cape en masker, trainen 'superkrachten' via een parcours en sluiten af met een spannende missie om de wereld te redden.",
+    ageRange: "4 - 10 jaar",
+    vanaf: 149,
+    gradient: "from-coral to-yellow-soft",
+    activities: [
+      "Cape en masker maken",
+      "Superheldentraining parcours",
+      "Missie uitvoeren",
+      "Superheldenparade",
+    ],
+    includes: [
+      "Superhelden-decoratie",
+      "Knutselmateriaal voor kostuum",
+      "Parcoursmaterialen",
+      "Cadeautje voor de jarige",
+    ],
+    featured: true,
+  },
+];
+
+export function getTheme(slug: string) {
+  return themes.find((t) => t.slug === slug);
+}
+
+export const featuredThemes = themes.filter((t) => t.featured);

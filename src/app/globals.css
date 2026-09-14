@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+:root {
+  --color-cream: #fff9f1;
+  --color-cream-soft: #fff4e6;
+  --color-pink: #f6b6c8;
+  --color-pink-soft: #fce0e8;
+  --color-peach: #f8c49a;
+  --color-peach-soft: #fce6d1;
+  --color-lavender: #cfc4f6;
+  --color-lavender-soft: #ebe5fc;
+  --color-mint: #bfe4d0;
+  --color-mint-soft: #e3f4ea;
+  --color-yellow: #f7dd7a;
+  --color-yellow-soft: #fbf0c3;
+  --color-coral: #f28f79;
+  --color-coral-soft: #fbdcd2;
+  --color-ink: #292522;
+  --color-ink-soft: #6b6259;
+}
+
+@theme inline {
+  --color-cream: var(--color-cream);
+  --color-cream-soft: var(--color-cream-soft);
+  --color-pink: var(--color-pink);
+  --color-pink-soft: var(--color-pink-soft);
+  --color-peach: var(--color-peach);
+  --color-peach-soft: var(--color-peach-soft);
+  --color-lavender: var(--color-lavender);
+  --color-lavender-soft: var(--color-lavender-soft);
+  --color-mint: var(--color-mint);
+  --color-mint-soft: var(--color-mint-soft);
+  --color-yellow: var(--color-yellow);
+  --color-yellow-soft: var(--color-yellow-soft);
+  --color-coral: var(--color-coral);
+  --color-coral-soft: var(--color-coral-soft);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --font-heading: var(--font-jakarta);
+  --font-body: var(--font-inter);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading), system-ui, sans-serif;
+}
+
+.blob {
+  border-radius: 42% 58% 63% 37% / 41% 47% 53% 59%;
+}
+
+.blob-2 {
+  border-radius: 63% 37% 42% 58% / 55% 45% 55% 45%;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(3deg);
+  }
+}
+
+.animate-float {
+  animation: float 7s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float 10s ease-in-out infinite;
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal {
+  animation: reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
