@@ -132,6 +132,9 @@ export async function sendBookingConfirmation(booking: Booking, origin?: string)
     </table>
     <p>Heb je in de tussentijd een vraag? Antwoord gewoon op deze e-mail.</p>
     <p style="margin-top:20px;">
+      <a href="${siteUrl(origin)}/draaiboek/${booking.id}" style="display:inline-block;background:#F28F79;color:#ffffff;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:bold;">Bekijk het draaiboek van jullie feestje</a>
+    </p>
+    <p style="margin-top:12px;">
       <a href="${siteUrl(origin)}/account/registreren?email=${encodeURIComponent(booking.email)}" style="display:inline-block;background:#292522;color:#ffffff;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:bold;">Maak een account aan om je boeking te volgen</a>
     </p>
     <p>Liefs,<br/>Rosa &amp; Charlotte</p>
@@ -141,7 +144,7 @@ export async function sendBookingConfirmation(booking: Booking, origin?: string)
   return send(booking.email, `Bedankt voor je boeking, ${booking.parentName.split(" ")[0]}!`, html);
 }
 
-export async function sendPartyReminder(booking: Booking) {
+export async function sendPartyReminder(booking: Booking, origin?: string) {
   const html = wrapper(
     "Bijna feest! 🎉",
     `
@@ -158,6 +161,9 @@ export async function sendPartyReminder(booking: Booking) {
       <li>Geef eventuele allergieën nogmaals aan ons door</li>
       <li>Wij zorgen voor de rest, jullie hoeven alleen te genieten!</li>
     </ul>
+    <p style="margin-top:16px;">
+      <a href="${siteUrl(origin)}/draaiboek/${booking.id}" style="display:inline-block;background:#F28F79;color:#ffffff;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:bold;">Bekijk het volledige draaiboek</a>
+    </p>
     <p>Vragen? Bel of mail ons gerust.</p>
     <p>Tot snel!<br/>Rosa &amp; Charlotte</p>
     `

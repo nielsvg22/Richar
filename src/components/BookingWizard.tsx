@@ -273,6 +273,15 @@ export default function BookingWizard({ themes }: { themes: Theme[] }) {
           <p className="text-ink-soft">{form.date} · {form.time}</p>
         </div>
 
+        {confirmedBooking && (
+          <Link
+            href={`/draaiboek/${confirmedBooking.id}`}
+            className="mt-4 inline-flex w-full items-center justify-center rounded-full border-2 border-ink/10 px-6 py-3 text-sm font-semibold hover:border-coral hover:text-coral"
+          >
+            📋 Bekijk het draaiboek van jullie feestje
+          </Link>
+        )}
+
         {confirmedBooking && confirmedBooking.depositAmount > 0 && (
           <div className="mt-6 rounded-2xl border-2 border-coral-soft p-5 text-left">
             <p className="font-semibold">Aanbetaling direct regelen?</p>

@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getBookings, type BookingStatus } from "@/lib/bookings";
+import { getMonthlyRevenue, getRevenueByTheme } from "@/lib/analytics";
 import StatsCard from "@/components/admin/StatsCard";
 import BookingTable from "@/components/admin/BookingTable";
+import RevenueChart from "@/components/admin/RevenueChart";
+import ThemeRevenueChart from "@/components/admin/ThemeRevenueChart";
 
 export const metadata: Metadata = {
   title: "Admin dashboard",
@@ -50,6 +53,9 @@ export default async function AdminDashboard({
   const filteredBookings =
     activeFilter === "Alle" ? bookings : bookings.filter((b) => b.status === activeFilter);
 
+  const monthlyRevenue = getMonthlyRevenue(6);
+  const revenueByTheme = getRevenueByTheme(6);
+
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -92,6 +98,11 @@ export default async function AdminDashboard({
           emoji="🎉"
           accent="bg-coral-soft"
         />
+      </div>
+
+      <div className="mt-10 grid gap-5 lg:grid-cols-2">
+        <RevenueChart data={monthlyRevenue} />
+        <ThemeRevenueChart data={revenueByTheme} />
       </div>
 
       <div className="mt-10">

@@ -33,9 +33,14 @@ export default async function AccountBookingDetailPage({
 
   return (
     <section className="mx-auto max-w-2xl px-5 py-14 sm:px-8 sm:py-20">
-      <Link href="/account" className="text-sm font-semibold text-ink-soft hover:text-coral">
-        ← Terug naar mijn boekingen
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link href="/account" className="text-sm font-semibold text-ink-soft hover:text-coral">
+          ← Terug naar mijn boekingen
+        </Link>
+        <Link href={`/draaiboek/${booking.id}`} className="text-sm font-semibold text-coral hover:underline">
+          📋 Bekijk draaiboek
+        </Link>
+      </div>
 
       <div className="mt-6 rounded-[2.5rem] bg-white p-8 shadow-sm">
         <div className="flex items-start justify-between">

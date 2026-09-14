@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getBooking, updateBookingStatus, type BookingStatus } from "@/lib/bookings";
+import {
+  getBooking,
+  updateBookingStatus,
+  setInternalNotes,
+  type BookingStatus,
+} from "@/lib/bookings";
 
 const VALID_STATUSES: BookingStatus[] = [
   "Nieuw",
@@ -28,16 +33,25 @@ export async function PATCH(
 ) {
   const { id } = await params;
   const body = await request.json();
-  const status = body.status as BookingStatus;
 
-  if (!VALID_STATUSES.includes(status)) {
-    return NextResponse.json({ error: "Ongeldige status." }, { status: 400 });
+  if (body.status !== undefined) {
+    if (!VALID_STATUSES.includes(body.status)) {
+      return NextResponse.json({ error: "Ongeldige status." }, { status: 400 });
+    }
+    const booking = updateBookingStatus(id, body.status);
+    if (!booking) {
+      return NextResponse.json({ error: "Boeking niet gevonden." }, { status: 404 });
+    }
+    return NextResponse.json(booking);
   }
 
-  const booking = updateBookingStatus(id, status);
-  if (!booking) {
-    return NextResponse.json({ error: "Boeking niet gevonden." }, { status: 404 });
+  if (body.internalNotes !== undefined) {
+    const booking = setInternalNotes(id, String(body.internalNotes));
+    if (!booking) {
+      return NextResponse.json({ error: "Boeking niet gevonden." }, { status: 404 });
+    }
+    return NextResponse.json(booking);
   }
 
-  return NextResponse.json(booking);
+  return NextResponse.json({ error: "Niets om bij te werken." }, { status: 400 });
 }

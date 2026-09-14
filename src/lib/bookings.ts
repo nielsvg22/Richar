@@ -42,6 +42,7 @@ export type Booking = {
   customerId: string | null;
   status: BookingStatus;
   emailsSent: EmailType[];
+  internalNotes: string;
 };
 
 export type EmailType = "confirmation" | "reminder" | "review";
@@ -133,6 +134,15 @@ export function getBookingsForCustomer(customerId: string, email: string): Booki
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 }
 
+export function setInternalNotes(id: string, notes: string) {
+  const bookings = ensureStore();
+  const booking = bookings.find((b) => b.id === id);
+  if (!booking) return undefined;
+  booking.internalNotes = notes;
+  fs.writeFileSync(DATA_FILE, JSON.stringify(bookings, null, 2));
+  return booking;
+}
+
 export function recordEmailSent(id: string, type: EmailType) {
   const bookings = ensureStore();
   const booking = bookings.find((b) => b.id === id);
@@ -184,6 +194,7 @@ function seedBookings(): Booking[] {
       molliePaymentId: null,
       customerId: null,
       emailsSent: [],
+      internalNotes: "",
     },
     {
       id: "RC-1043",
@@ -218,6 +229,7 @@ function seedBookings(): Booking[] {
       molliePaymentId: null,
       customerId: null,
       emailsSent: [],
+      internalNotes: "",
     },
     {
       id: "RC-1044",
@@ -252,6 +264,7 @@ function seedBookings(): Booking[] {
       molliePaymentId: null,
       customerId: null,
       emailsSent: [],
+      internalNotes: "",
     },
     {
       id: "RC-1045",
@@ -286,6 +299,7 @@ function seedBookings(): Booking[] {
       molliePaymentId: null,
       customerId: null,
       emailsSent: [],
+      internalNotes: "",
     },
     {
       id: "RC-1046",
@@ -320,6 +334,7 @@ function seedBookings(): Booking[] {
       molliePaymentId: null,
       customerId: null,
       emailsSent: [],
+      internalNotes: "",
     },
   ];
 }

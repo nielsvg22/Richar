@@ -1,4 +1,5 @@
 import { getBookings } from "./bookings";
+import { getBlockedDatesInMonth, isDateBlocked } from "./blockedDates";
 
 export const MAX_BOOKINGS_PER_DAY = 2;
 
@@ -13,9 +14,29 @@ export function getAvailabilityForMonth(year: number, month: number) {
     }
   }
 
-  const result: Record<string, { count: number; full: boolean }> = {};
+  const blocked = getBlockedDatesInMonth(year, month);
+
+  const result: Record<string, { count: number; full: boolean; blocked: boolean }> = {};
   for (const [date, count] of counts) {
-    result[date] = { count, full: count >= MAX_BOOKINGS_PER_DAY };
+    result[date] = { count, full: count >= MAX_BOOKINGS_PER_DAY, blocked: false };
   }
+  for (const date of blocked) {
+    const existing = result[date];
+    result[date] = { count: existing?.count ?? 0, full: true, blocked: true };
+  }
+
   return result;
+}
+
+export function isBookable(date: string): { bookable: boolean; reason?: string } {
+  if (isDateBlocked(date)) {
+    return { bookable: false, reason: "Deze datum is niet beschikbaar." };
+  }
+  const count = getBookings().filter(
+    (b) => b.date === date && b.status !== "Geannuleerd"
+  ).length;
+  if (count >= MAX_BOOKINGS_PER_DAY) {
+    return { bookable: false, reason: "Deze datum zit helaas al vol. Kies een andere datum." };
+  }
+  return { bookable: true };
 }

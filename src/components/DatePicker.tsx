@@ -18,7 +18,7 @@ const MONTH_NAMES = [
   "december",
 ];
 
-type DayInfo = { count: number; full: boolean };
+type DayInfo = { count: number; full: boolean; blocked?: boolean };
 
 function toDateKey(date: Date) {
   const y = date.getFullYear();
@@ -123,7 +123,7 @@ export default function DatePicker({
               type="button"
               disabled={disabled}
               onClick={() => onChange(key)}
-              title={isFull ? "Deze dag zit al vol" : undefined}
+              title={info?.blocked ? "Deze dag is niet beschikbaar" : isFull ? "Deze dag zit al vol" : undefined}
               className={`relative flex h-9 items-center justify-center rounded-xl text-sm transition-colors ${
                 isSelected
                   ? "bg-coral text-cream font-semibold"

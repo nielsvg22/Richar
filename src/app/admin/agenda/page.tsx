@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getBookings } from "@/lib/bookings";
+import { getBlockedDates } from "@/lib/blockedDates";
 import CalendarMonth from "@/components/admin/CalendarMonth";
 
 export const metadata: Metadata = {
@@ -43,6 +44,7 @@ export default async function AgendaPage({
   }
 
   const bookings = getBookings().filter((b) => b.status !== "Geannuleerd");
+  const blockedDates = getBlockedDates();
 
   const prevDate = new Date(year, month - 1, 1);
   const nextDate = new Date(year, month + 1, 1);
@@ -93,8 +95,12 @@ export default async function AgendaPage({
         {MONTH_NAMES[month]} {year}
       </h2>
 
+      <p className="mt-2 text-xs text-ink-soft">
+        Beweeg over een dag en klik op het slotje om een dag te blokkeren of deblokkeren.
+      </p>
+
       <div className="mt-4">
-        <CalendarMonth year={year} month={month} bookings={bookings} />
+        <CalendarMonth year={year} month={month} bookings={bookings} blockedDates={blockedDates} />
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import { getBookings, saveBooking, recordEmailSent, type Booking } from "@/lib/b
 import { getTheme } from "@/lib/themes";
 import { getPackage, getExtra, EXTRA_CHILD_PRICE } from "@/lib/pricing";
 import { sendBookingConfirmation } from "@/lib/email";
-import { MAX_BOOKINGS_PER_DAY } from "@/lib/availability";
+import { isBookable } from "@/lib/availability";
 import { validateDiscount, incrementDiscountUsage } from "@/lib/discounts";
 import { validateVoucher, redeemVoucherAmount } from "@/lib/vouchers";
 
@@ -43,14 +43,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const bookingsOnDate = getBookings().filter(
-    (b) => b.date === date && b.status !== "Geannuleerd"
-  );
-  if (!force && bookingsOnDate.length >= MAX_BOOKINGS_PER_DAY) {
-    return NextResponse.json(
-      { error: "Deze datum zit helaas al vol. Kies een andere datum." },
-      { status: 409 }
-    );
+  if (!force) {
+    const availability = isBookable(date);
+    if (!availability.bookable) {
+      return NextResponse.json({ error: availability.reason }, { status: 409 });
+    }
   }
 
   const kidsCount = Number(kids) || pkg.maxKids;
@@ -123,6 +120,7 @@ export async function POST(request: NextRequest) {
     customerId: null,
     status: "Nieuw",
     emailsSent: [],
+    internalNotes: "",
   };
 
   saveBooking(booking);

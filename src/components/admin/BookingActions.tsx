@@ -126,6 +126,14 @@ export default function BookingActions({ booking }: { booking: Booking }) {
           >
             Bekijk factuur
           </Link>
+          <a
+            href={`/draaiboek/${booking.id}`}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-full border-2 border-ink/10 px-5 py-3 text-center text-sm font-semibold hover:border-coral hover:text-coral"
+          >
+            Draaiboek (klantversie)
+          </a>
           {status !== "Geannuleerd" && status !== "Afgerond" && (
             <button
               type="button"

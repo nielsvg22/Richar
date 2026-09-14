@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getBooking } from "@/lib/bookings";
 import { getExtra } from "@/lib/pricing";
 import BookingActions from "@/components/admin/BookingActions";
+import InternalNotesEditor from "@/components/admin/InternalNotesEditor";
 
 export const metadata: Metadata = {
   title: "Boekingsdetail",
@@ -115,6 +116,10 @@ export default async function BookingDetailPage({
                 value={new Date(booking.createdAt).toLocaleDateString("nl-NL")}
               />
             </div>
+          </div>
+
+          <div className="mt-6">
+            <InternalNotesEditor bookingId={booking.id} initialNotes={booking.internalNotes} />
           </div>
         </div>
 
