@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getBooking } from "@/lib/bookings";
 import { getExtra } from "@/lib/pricing";
-import { getTheme } from "@/lib/themes";
+import { getTheme, DEFAULT_CHECKLIST } from "@/lib/themes";
+import { getThemeImages } from "@/lib/themeImages";
+import { getThemeArtDataUrls } from "@/lib/themeArt";
+import ImageSlider from "@/components/ImageSlider";
 
 export const metadata: Metadata = {
   title: "Draaiboek van jullie feestje",
@@ -26,6 +29,14 @@ export default async function DraaiboekPage({
   today.setHours(0, 0, 0, 0);
   const daysUntil = Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
+  const uploadedImages = theme ? await getThemeImages(theme.slug) : [];
+  const sliderImages = uploadedImages.length
+    ? uploadedImages.map((img) => `/api/theme-images/${img.id}`)
+    : theme
+      ? getThemeArtDataUrls(theme.slug, theme.gradient, theme.emoji)
+      : [];
+  const checklist = theme?.checklist?.length ? theme.checklist : DEFAULT_CHECKLIST;
+
   return (
     <section className="mx-auto max-w-2xl px-5 py-14 sm:px-8 sm:py-20">
       <div className="text-center">
@@ -45,6 +56,12 @@ export default async function DraaiboekPage({
           </div>
         ) : null}
       </div>
+
+      {sliderImages.length > 0 && (
+        <div className="mt-10">
+          <ImageSlider images={sliderImages} alt={`Sfeerbeeld van ${booking.themeName}`} />
+        </div>
+      )}
 
       <div className="mt-10 rounded-[2.5rem] bg-white p-8 shadow-sm">
         <h2 className="font-heading text-lg font-bold">Wanneer & waar</h2>
@@ -77,30 +94,14 @@ export default async function DraaiboekPage({
       <div className="mt-6 rounded-[2.5rem] bg-white p-8 shadow-sm">
         <h2 className="font-heading text-lg font-bold">Checklist voor jullie</h2>
         <ul className="mt-4 space-y-3 text-sm">
-          <li className="flex items-start gap-3">
-            <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-mint-soft text-xs">
-              ✓
-            </span>
-            Zorg voor een vrije tafel of ruimte voor de activiteit.
-          </li>
-          <li className="flex items-start gap-3">
-            <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-mint-soft text-xs">
-              ✓
-            </span>
-            Geef eventuele allergieën van gasten tijdig aan ons door.
-          </li>
-          <li className="flex items-start gap-3">
-            <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-mint-soft text-xs">
-              ✓
-            </span>
-            Zorg dat er een plek is waar jassen en tassen neergelegd kunnen worden.
-          </li>
-          <li className="flex items-start gap-3">
-            <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-mint-soft text-xs">
-              ✓
-            </span>
-            Wij zorgen voor de rest: decoratie, activiteit en begeleiding. Jullie hoeven alleen te genieten!
-          </li>
+          {checklist.map((item, i) => (
+            <li key={i} className="flex items-start gap-3">
+              <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-mint-soft text-xs">
+                ✓
+              </span>
+              {item}
+            </li>
+          ))}
         </ul>
 
         {booking.notes && (

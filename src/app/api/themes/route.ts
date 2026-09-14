@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
     activities,
     includes,
     featured,
+    checklist,
   } = body;
 
   if (!name || !emoji || !tagline || !description || !longDescription || !ageRange || !gradient) {
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const theme: Omit<Theme, "slug"> & { slug?: string } = {
+  const theme: Omit<Theme, "slug" | "checklist"> & { slug?: string; checklist?: string[] } = {
     slug,
     name,
     emoji,
@@ -48,6 +49,7 @@ export async function POST(request: NextRequest) {
     activities: Array.isArray(activities) ? activities.filter(Boolean) : [],
     includes: Array.isArray(includes) ? includes.filter(Boolean) : [],
     featured: Boolean(featured),
+    checklist: Array.isArray(checklist) ? checklist.filter(Boolean) : undefined,
   };
 
   const created = await createTheme(theme);

@@ -11,7 +11,15 @@ export type Theme = {
   activities: string[];
   includes: string[];
   featured: boolean;
+  checklist: string[];
 };
+
+export const DEFAULT_CHECKLIST = [
+  "Zorg voor een vrije tafel of ruimte voor de activiteit.",
+  "Geef eventuele allergieën van gasten tijdig aan ons door.",
+  "Zorg dat er een plek is waar jassen en tassen neergelegd kunnen worden.",
+  "Wij zorgen voor de rest: decoratie, activiteit en begeleiding. Jullie hoeven alleen te genieten!",
+];
 
 export const GRADIENT_OPTIONS = [
   { value: "from-pink to-lavender-soft", label: "Roze → Lavendel" },

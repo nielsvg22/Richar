@@ -2,8 +2,10 @@ import { sql, ensureSchema } from "./db";
 import type { Theme } from "./theme-constants";
 
 export type { Theme } from "./theme-constants";
+export { DEFAULT_CHECKLIST } from "./theme-constants";
+import { DEFAULT_CHECKLIST } from "./theme-constants";
 
-const defaultThemes: Theme[] = [
+const defaultThemes: Omit<Theme, "checklist">[] = [
   {
     slug: "prinsessenfeest",
     name: "Prinsessenfeest",
@@ -277,6 +279,7 @@ type ThemeRow = {
   activities: string[];
   includes: string[];
   featured: boolean;
+  checklist: string[];
 };
 
 function rowToTheme(row: ThemeRow): Theme {
@@ -293,6 +296,7 @@ function rowToTheme(row: ThemeRow): Theme {
     activities: row.activities,
     includes: row.includes,
     featured: row.featured,
+    checklist: row.checklist,
   };
 }
 
@@ -303,8 +307,8 @@ async function ensureSeeded() {
     for (let i = 0; i < defaultThemes.length; i++) {
       const t = defaultThemes[i];
       await sql`
-        INSERT INTO themes (slug, name, emoji, tagline, description, long_description, age_range, vanaf, gradient, activities, includes, featured, sort_order)
-        VALUES (${t.slug}, ${t.name}, ${t.emoji}, ${t.tagline}, ${t.description}, ${t.longDescription}, ${t.ageRange}, ${t.vanaf}, ${t.gradient}, ${sql.json(t.activities)}, ${sql.json(t.includes)}, ${t.featured}, ${i})
+        INSERT INTO themes (slug, name, emoji, tagline, description, long_description, age_range, vanaf, gradient, activities, includes, featured, sort_order, checklist)
+        VALUES (${t.slug}, ${t.name}, ${t.emoji}, ${t.tagline}, ${t.description}, ${t.longDescription}, ${t.ageRange}, ${t.vanaf}, ${t.gradient}, ${sql.json(t.activities)}, ${sql.json(t.includes)}, ${t.featured}, ${i}, ${sql.json(DEFAULT_CHECKLIST)})
         ON CONFLICT (slug) DO NOTHING
       `;
     }
@@ -332,7 +336,9 @@ export function slugify(value: string): string {
     .replace(/(^-|-$)/g, "");
 }
 
-export async function createTheme(data: Omit<Theme, "slug"> & { slug?: string }): Promise<Theme> {
+export async function createTheme(
+  data: Omit<Theme, "slug" | "checklist"> & { slug?: string; checklist?: string[] }
+): Promise<Theme> {
   await ensureSeeded();
   const baseSlug = slugify(data.slug || data.name);
   let slug = baseSlug;
@@ -342,10 +348,10 @@ export async function createTheme(data: Omit<Theme, "slug"> & { slug?: string })
     counter += 1;
   }
   const [{ max }] = await sql<{ max: number | null }[]>`SELECT MAX(sort_order) as max FROM themes`;
-  const theme: Theme = { ...data, slug };
+  const theme: Theme = { checklist: DEFAULT_CHECKLIST, ...data, slug };
   await sql`
-    INSERT INTO themes (slug, name, emoji, tagline, description, long_description, age_range, vanaf, gradient, activities, includes, featured, sort_order)
-    VALUES (${theme.slug}, ${theme.name}, ${theme.emoji}, ${theme.tagline}, ${theme.description}, ${theme.longDescription}, ${theme.ageRange}, ${theme.vanaf}, ${theme.gradient}, ${sql.json(theme.activities)}, ${sql.json(theme.includes)}, ${theme.featured}, ${(max ?? -1) + 1})
+    INSERT INTO themes (slug, name, emoji, tagline, description, long_description, age_range, vanaf, gradient, activities, includes, featured, sort_order, checklist)
+    VALUES (${theme.slug}, ${theme.name}, ${theme.emoji}, ${theme.tagline}, ${theme.description}, ${theme.longDescription}, ${theme.ageRange}, ${theme.vanaf}, ${theme.gradient}, ${sql.json(theme.activities)}, ${sql.json(theme.includes)}, ${theme.featured}, ${(max ?? -1) + 1}, ${sql.json(theme.checklist)})
   `;
   return theme;
 }
@@ -370,7 +376,8 @@ export async function updateTheme(slug: string, data: Partial<Theme>): Promise<T
       gradient = ${next.gradient},
       activities = ${sql.json(next.activities)},
       includes = ${sql.json(next.includes)},
-      featured = ${next.featured}
+      featured = ${next.featured},
+      checklist = ${sql.json(next.checklist)}
     WHERE slug = ${slug}
   `;
   return next;

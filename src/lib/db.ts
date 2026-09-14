@@ -37,6 +37,27 @@ async function migrate() {
       sort_order INTEGER NOT NULL DEFAULT 0
     )
   `;
+  await sql`ALTER TABLE themes ADD COLUMN IF NOT EXISTS checklist JSONB NOT NULL DEFAULT '[]'`;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS theme_images (
+      id TEXT PRIMARY KEY,
+      theme_slug TEXT NOT NULL,
+      content_type TEXT NOT NULL,
+      data BYTEA NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS theme_images_theme_slug_idx ON theme_images (theme_slug, sort_order)`;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS site_content (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
 
   await sql`
     CREATE TABLE IF NOT EXISTS bookings (

@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { GRADIENT_OPTIONS, type Theme } from "@/lib/theme-constants";
+import { GRADIENT_OPTIONS, DEFAULT_CHECKLIST, type Theme } from "@/lib/theme-constants";
+import ThemeImageManager from "./ThemeImageManager";
 
 type ThemeFormValues = {
   name: string;
@@ -16,6 +17,7 @@ type ThemeFormValues = {
   activities: string[];
   includes: string[];
   featured: boolean;
+  checklist: string[];
 };
 
 function toFormValues(theme?: Theme): ThemeFormValues {
@@ -31,6 +33,7 @@ function toFormValues(theme?: Theme): ThemeFormValues {
     activities: theme?.activities?.length ? theme.activities : [""],
     includes: theme?.includes?.length ? theme.includes : [""],
     featured: theme?.featured ?? false,
+    checklist: theme?.checklist?.length ? theme.checklist : DEFAULT_CHECKLIST,
   };
 }
 
@@ -45,7 +48,11 @@ export default function ThemeForm({ theme }: { theme?: Theme }) {
     setValues((v) => ({ ...v, [key]: value }));
   }
 
-  function updateListItem(list: "activities" | "includes", index: number, value: string) {
+  function updateListItem(
+    list: "activities" | "includes" | "checklist",
+    index: number,
+    value: string
+  ) {
     setValues((v) => {
       const next = [...v[list]];
       next[index] = value;
@@ -53,11 +60,11 @@ export default function ThemeForm({ theme }: { theme?: Theme }) {
     });
   }
 
-  function addListItem(list: "activities" | "includes") {
+  function addListItem(list: "activities" | "includes" | "checklist") {
     setValues((v) => ({ ...v, [list]: [...v[list], ""] }));
   }
 
-  function removeListItem(list: "activities" | "includes", index: number) {
+  function removeListItem(list: "activities" | "includes" | "checklist", index: number) {
     setValues((v) => ({ ...v, [list]: v[list].filter((_, i) => i !== index) }));
   }
 
@@ -71,6 +78,7 @@ export default function ThemeForm({ theme }: { theme?: Theme }) {
       vanaf: Number(values.vanaf),
       activities: values.activities.map((a) => a.trim()).filter(Boolean),
       includes: values.includes.map((i) => i.trim()).filter(Boolean),
+      checklist: values.checklist.map((c) => c.trim()).filter(Boolean),
     };
 
     try {
@@ -228,6 +236,23 @@ export default function ThemeForm({ theme }: { theme?: Theme }) {
         onAdd={() => addListItem("includes")}
         onRemove={(i) => removeListItem("includes", i)}
       />
+
+      <ListEditor
+        label="Checklist voor het draaiboek"
+        items={values.checklist}
+        onChange={(i, v) => updateListItem("checklist", i, v)}
+        onAdd={() => addListItem("checklist")}
+        onRemove={(i) => removeListItem("checklist", i)}
+      />
+
+      {isEdit && theme && (
+        <div>
+          <label className="text-sm font-semibold">Foto&apos;s voor het draaiboek</label>
+          <div className="mt-2">
+            <ThemeImageManager slug={theme.slug} />
+          </div>
+        </div>
+      )}
 
       <label className="flex items-center gap-3 text-sm font-semibold">
         <input

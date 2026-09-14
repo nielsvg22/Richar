@@ -39,6 +39,7 @@ export async function PATCH(
     activities,
     includes,
     featured,
+    checklist,
   } = body;
 
   const updated = await updateTheme(slug, {
@@ -53,6 +54,7 @@ export async function PATCH(
     activities: Array.isArray(activities) ? activities.filter(Boolean) : undefined,
     includes: Array.isArray(includes) ? includes.filter(Boolean) : undefined,
     featured: featured !== undefined ? Boolean(featured) : undefined,
+    checklist: Array.isArray(checklist) ? checklist.filter(Boolean) : undefined,
   });
 
   if (!updated) {
