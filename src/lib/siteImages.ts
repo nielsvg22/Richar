@@ -10,6 +10,12 @@ export type SiteImageSlot = {
 
 export const SITE_IMAGE_SLOTS: SiteImageSlot[] = [
   {
+    id: "hero",
+    label: "Hero-afbeelding",
+    description: "Grote foto rechts bovenaan de homepage.",
+    filename: "hero.jpg",
+  },
+  {
     id: "logo",
     label: "Logo",
     description: "Verschijnt in de navigatiebalk en de footer.",
@@ -35,15 +41,18 @@ export function getSiteImageSlot(id: string): SiteImageSlot | undefined {
   return SITE_IMAGE_SLOTS.find((slot) => slot.id === id);
 }
 
-export function siteImageUrl(slot: SiteImageSlot): string {
+export function siteImageExists(slot: SiteImageSlot): boolean {
+  return fs.existsSync(path.join(IMAGES_DIR, slot.filename));
+}
+
+export function siteImageUrl(slot: SiteImageSlot): string | null {
   const filePath = path.join(IMAGES_DIR, slot.filename);
-  let version = 0;
   try {
-    version = Math.floor(fs.statSync(filePath).mtimeMs);
+    const version = Math.floor(fs.statSync(filePath).mtimeMs);
+    return `/images/${slot.filename}?v=${version}`;
   } catch {
-    version = 0;
+    return null;
   }
-  return `/images/${slot.filename}?v=${version}`;
 }
 
 export function saveSiteImage(slot: SiteImageSlot, buffer: Buffer) {

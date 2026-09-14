@@ -1,6 +1,11 @@
 import Link from "next/link";
+import Image from "next/image";
+import { getSiteImageSlot, siteImageUrl } from "@/lib/siteImages";
 
 export default function Hero() {
+  const heroSlot = getSiteImageSlot("hero");
+  const heroImageUrl = heroSlot ? siteImageUrl(heroSlot) : null;
+
   return (
     <section className="relative overflow-hidden">
       <div
@@ -63,7 +68,18 @@ export default function Hero() {
         </div>
 
         <div className="relative reveal">
-          <div className="aspect-square w-full max-w-md rounded-[3rem] bg-gradient-to-br from-pink via-peach-soft to-lavender-soft blob shadow-2xl shadow-coral/10 lg:ml-auto" />
+          <div className="relative aspect-square w-full max-w-md overflow-hidden rounded-[3rem] bg-gradient-to-br from-pink via-peach-soft to-lavender-soft blob shadow-2xl shadow-coral/10 lg:ml-auto">
+            {heroImageUrl && (
+              <Image
+                src={heroImageUrl}
+                alt="Kinderfeestje van Rosa & Charlotte"
+                fill
+                unoptimized
+                priority
+                className="object-cover"
+              />
+            )}
+          </div>
           <div className="absolute -bottom-6 -left-6 rounded-3xl bg-white px-6 py-4 shadow-xl">
             <p className="font-heading text-2xl font-extrabold text-coral">4.9★</p>
             <p className="text-xs text-ink-soft">gemiddelde beoordeling</p>

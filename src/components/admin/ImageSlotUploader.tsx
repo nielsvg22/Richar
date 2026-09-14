@@ -10,7 +10,7 @@ export default function ImageSlotUploader({
   currentUrl,
 }: {
   slot: SiteImageSlot;
-  currentUrl: string;
+  currentUrl: string | null;
 }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -44,47 +44,48 @@ export default function ImageSlotUploader({
     }
   }
 
+  const imageSrc = preview ?? currentUrl;
+
   return (
-    <div className="rounded-[2rem] bg-white p-6 shadow-sm">
-      <div className="flex items-center gap-4">
-        <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-cream-soft">
-          <Image
-            src={preview ?? currentUrl}
-            alt={slot.label}
-            width={80}
-            height={80}
-            unoptimized
-            className="h-full w-full object-cover"
+    <div className="overflow-hidden rounded-[2rem] bg-white shadow-sm">
+      <div className="relative aspect-[16/10] w-full bg-cream-soft">
+        {imageSrc ? (
+          <Image src={imageSrc} alt={slot.label} fill unoptimized className="object-cover" />
+        ) : (
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-ink-soft">
+            <span className="text-3xl">🖼️</span>
+            <span className="text-xs font-semibold">Nog geen afbeelding</span>
+          </div>
+        )}
+      </div>
+
+      <div className="p-5">
+        <p className="font-heading font-bold">{slot.label}</p>
+        <p className="mt-1 text-sm text-ink-soft">{slot.description}</p>
+
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            disabled={status === "loading"}
+            className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-cream hover:bg-coral disabled:opacity-60"
+          >
+            {status === "loading" ? "Uploaden..." : "Vervangen"}
+          </button>
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            onChange={handleFileChange}
+            className="hidden"
           />
+          <span className="text-xs text-ink-soft">PNG, JPG of WebP, max 5MB</span>
         </div>
-        <div className="min-w-0">
-          <p className="font-heading font-bold">{slot.label}</p>
-          <p className="mt-1 text-sm text-ink-soft">{slot.description}</p>
-        </div>
-      </div>
 
-      <div className="mt-4 flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          disabled={status === "loading"}
-          className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-cream hover:bg-coral disabled:opacity-60"
-        >
-          {status === "loading" ? "Uploaden..." : "Vervangen"}
-        </button>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-          onChange={handleFileChange}
-          className="hidden"
-        />
-        <span className="text-xs text-ink-soft">PNG, JPG of WebP, max 5MB</span>
+        {status === "error" && (
+          <p className="mt-3 rounded-xl bg-coral-soft px-4 py-2 text-sm text-ink">{error}</p>
+        )}
       </div>
-
-      {status === "error" && (
-        <p className="mt-3 rounded-xl bg-coral-soft px-4 py-2 text-sm text-ink">{error}</p>
-      )}
     </div>
   );
 }
