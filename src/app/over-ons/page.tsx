@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import CTASection from "@/components/CTASection";
 import ReviewSection from "@/components/ReviewSection";
 
@@ -53,8 +54,24 @@ export default function OverOnsPage() {
             </p>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="aspect-[3/4] translate-y-8 rounded-[2.5rem] bg-gradient-to-br from-pink to-lavender-soft blob" />
-            <div className="aspect-[3/4] rounded-[2.5rem] bg-gradient-to-br from-mint to-yellow-soft blob-2" />
+            <div className="relative aspect-[3/4] translate-y-8 overflow-hidden rounded-[2.5rem] blob">
+              <Image
+                src="/images/team-jungle-party.jpg"
+                alt="Rosa & Charlotte tijdens een kinderfeestje"
+                fill
+                sizes="(min-width: 1024px) 25vw, 45vw"
+                className="object-cover"
+              />
+            </div>
+            <div className="relative aspect-[3/4] overflow-hidden rounded-[2.5rem] blob-2">
+              <Image
+                src="/images/team-office.jpg"
+                alt="Rosa & Charlotte aan het werk"
+                fill
+                sizes="(min-width: 1024px) 25vw, 45vw"
+                className="object-cover"
+              />
+            </div>
           </div>
         </div>
       </section>

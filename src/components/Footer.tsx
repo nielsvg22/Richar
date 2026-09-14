@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 export default function Footer() {
@@ -12,10 +13,14 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8">
         <div className="grid gap-10 md:grid-cols-4">
           <div>
-            <Link href="/" className="flex items-center gap-2">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-coral text-base blob">
-                🎉
-              </span>
+            <Link href="/" className="flex items-center gap-2.5">
+              <Image
+                src="/images/logo.png"
+                alt="Rosa & Charlotte Kinderfeestjes"
+                width={36}
+                height={36}
+                className="h-9 w-9 rounded-full object-cover"
+              />
               <span className="font-heading text-base font-extrabold">
                 Rosa &amp; Charlotte
               </span>

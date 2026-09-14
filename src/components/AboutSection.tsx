@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function AboutSection() {
   return (
@@ -6,8 +7,24 @@ export default function AboutSection() {
       <div className="grid items-center gap-12 lg:grid-cols-2">
         <div className="relative">
           <div className="grid grid-cols-2 gap-4">
-            <div className="aspect-[3/4] translate-y-6 rounded-[2rem] bg-gradient-to-br from-pink to-lavender-soft blob" />
-            <div className="aspect-[3/4] rounded-[2rem] bg-gradient-to-br from-mint to-yellow-soft blob-2" />
+            <div className="relative aspect-[3/4] translate-y-6 overflow-hidden rounded-[2rem] blob">
+              <Image
+                src="/images/team-jungle-party.jpg"
+                alt="Rosa & Charlotte tijdens een kinderfeestje"
+                fill
+                sizes="(min-width: 1024px) 25vw, 45vw"
+                className="object-cover"
+              />
+            </div>
+            <div className="relative aspect-[3/4] overflow-hidden rounded-[2rem] blob-2">
+              <Image
+                src="/images/team-office.jpg"
+                alt="Rosa & Charlotte aan het werk"
+                fill
+                sizes="(min-width: 1024px) 25vw, 45vw"
+                className="object-cover"
+              />
+            </div>
           </div>
           <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 rounded-2xl bg-white px-5 py-3 text-center shadow-lg">
             <p className="font-heading text-sm font-bold">Rosa &amp; Charlotte</p>
