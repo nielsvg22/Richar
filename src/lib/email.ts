@@ -1,14 +1,23 @@
 import { Resend } from "resend";
 import type { Booking } from "./bookings";
 import { getExtra } from "./pricing";
-
-const FROM = process.env.EMAIL_FROM || "Rosa & Charlotte <onboarding@resend.dev>";
-const REPLY_TO = process.env.EMAIL_REPLY_TO || "hallo@rosaencharlotte.nl";
+import { getSettings } from "./settings";
 
 function getClient() {
-  const apiKey = process.env.RESEND_API_KEY;
+  const settings = getSettings();
+  const apiKey = settings.resendApiKey || process.env.RESEND_API_KEY;
   if (!apiKey) return null;
   return new Resend(apiKey);
+}
+
+function getFrom() {
+  const settings = getSettings();
+  return settings.emailFrom || process.env.EMAIL_FROM || "Rosa & Charlotte <onboarding@resend.dev>";
+}
+
+function getReplyTo() {
+  const settings = getSettings();
+  return settings.emailReplyTo || process.env.EMAIL_REPLY_TO || "hallo@rosaencharlotte.nl";
 }
 
 function wrapper(title: string, body: string) {
@@ -41,16 +50,40 @@ function formatDate(date: string) {
 async function send(to: string, subject: string, html: string) {
   const client = getClient();
   if (!client) {
-    console.warn("[email] RESEND_API_KEY ontbreekt, e-mail niet verstuurd:", subject, "→", to);
-    return { success: false, error: "Geen RESEND_API_KEY geconfigureerd." };
+    console.warn("[email] Geen Resend API key geconfigureerd, e-mail niet verstuurd:", subject, "→", to);
+    return {
+      success: false,
+      error: "Geen Resend API key geconfigureerd. Stel deze in bij Admin → Instellingen.",
+    };
   }
   try {
-    await client.emails.send({ from: FROM, to, subject, html, replyTo: REPLY_TO });
+    const { error: sendError } = await client.emails.send({
+      from: getFrom(),
+      to,
+      subject,
+      html,
+      replyTo: getReplyTo(),
+    });
+    if (sendError) {
+      console.error("[email] Resend gaf een fout terug:", sendError);
+      return { success: false, error: sendError.message || "Resend gaf een fout terug." };
+    }
     return { success: true };
   } catch (err) {
     console.error("[email] Versturen mislukt:", err);
     return { success: false, error: err instanceof Error ? err.message : "Onbekende fout." };
   }
+}
+
+export async function sendTestEmail(to: string) {
+  const html = wrapper(
+    "Testmail vanuit Rosa & Charlotte 🎉",
+    `
+    <p>Dit is een testbericht om te controleren of de Resend-instellingen correct zijn ingesteld.</p>
+    <p>Als je dit ontvangt, werkt alles zoals het hoort!</p>
+    `
+  );
+  return send(to, "Testmail — Resend instellingen werken!", html);
 }
 
 export async function sendBookingConfirmation(booking: Booking) {
