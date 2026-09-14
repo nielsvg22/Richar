@@ -67,6 +67,11 @@ export default function BookingWizard({ themes }: { themes: Theme[] }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [confirmedId, setConfirmedId] = useState<string | null>(null);
+  const [confirmedBooking, setConfirmedBooking] = useState<{ id: string; depositAmount: number } | null>(
+    null
+  );
+  const [paymentStatus, setPaymentStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [paymentError, setPaymentError] = useState("");
   const [submitError, setSubmitError] = useState("");
 
   const theme = useMemo(
@@ -183,10 +188,30 @@ export default function BookingWizard({ themes }: { themes: Theme[] }) {
       }
       const booking = await res.json();
       setConfirmedId(booking.id);
+      setConfirmedBooking(booking);
       setStatus("success");
     } catch (err) {
       setStatus("error");
       setSubmitError(err instanceof Error ? err.message : "Er ging iets mis.");
+    }
+  }
+
+  async function startPayment() {
+    if (!confirmedBooking) return;
+    setPaymentStatus("loading");
+    setPaymentError("");
+    try {
+      const res = await fetch("/api/payments/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingId: confirmedBooking.id }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Er ging iets mis bij het starten van de betaling.");
+      window.location.href = body.checkoutUrl;
+    } catch (err) {
+      setPaymentStatus("error");
+      setPaymentError(err instanceof Error ? err.message : "Er ging iets mis.");
     }
   }
 
@@ -205,6 +230,28 @@ export default function BookingWizard({ themes }: { themes: Theme[] }) {
           <p className="font-semibold">{theme?.name} · {pkg?.name} pakket</p>
           <p className="text-ink-soft">{form.date} · {form.time}</p>
         </div>
+
+        {confirmedBooking && confirmedBooking.depositAmount > 0 && (
+          <div className="mt-6 rounded-2xl border-2 border-coral-soft p-5 text-left">
+            <p className="font-semibold">Aanbetaling direct regelen?</p>
+            <p className="mt-1 text-sm text-ink-soft">
+              Betaal nu de aanbetaling van €{confirmedBooking.depositAmount} online, dan is jullie
+              plek definitief gereserveerd.
+            </p>
+            {paymentError && <p className="mt-3 text-sm text-coral">{paymentError}</p>}
+            <button
+              type="button"
+              onClick={startPayment}
+              disabled={paymentStatus === "loading"}
+              className="mt-4 w-full rounded-full bg-coral px-6 py-3.5 text-sm font-semibold text-cream hover:opacity-90 disabled:opacity-60"
+            >
+              {paymentStatus === "loading" ? "Bezig..." : `Betaal €${confirmedBooking.depositAmount} aanbetaling`}
+            </button>
+            <p className="mt-3 text-center text-xs text-ink-soft">
+              Liever later betalen? Geen probleem, we sturen ook een betaallink per e-mail.
+            </p>
+          </div>
+        )}
       </div>
     );
   }

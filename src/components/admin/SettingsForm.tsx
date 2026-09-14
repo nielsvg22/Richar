@@ -7,6 +7,8 @@ type SettingsValues = {
   resendApiKeyConfigured: boolean;
   emailFrom: string;
   emailReplyTo: string;
+  mollieApiKey: string;
+  mollieApiKeyConfigured: boolean;
 };
 
 export default function SettingsForm({ initial }: { initial: SettingsValues }) {
@@ -15,6 +17,14 @@ export default function SettingsForm({ initial }: { initial: SettingsValues }) {
   const [configured, setConfigured] = useState(initial.resendApiKeyConfigured);
   const [emailFrom, setEmailFrom] = useState(initial.emailFrom);
   const [emailReplyTo, setEmailReplyTo] = useState(initial.emailReplyTo);
+
+  const [mollieKeyInput, setMollieKeyInput] = useState("");
+  const [maskedMollieKey, setMaskedMollieKey] = useState(initial.mollieApiKey);
+  const [mollieConfigured, setMollieConfigured] = useState(initial.mollieApiKeyConfigured);
+  const [mollieSaveStatus, setMollieSaveStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [mollieSaveMessage, setMollieSaveMessage] = useState("");
+  const [mollieTestStatus, setMollieTestStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [mollieTestMessage, setMollieTestMessage] = useState("");
 
   const [saveStatus, setSaveStatus] = useState<"idle" | "loading" | "error">("idle");
   const [saveMessage, setSaveMessage] = useState("");
@@ -49,6 +59,46 @@ export default function SettingsForm({ initial }: { initial: SettingsValues }) {
     } catch (err) {
       setSaveStatus("error");
       setSaveMessage(err instanceof Error ? err.message : "Opslaan mislukt.");
+    }
+  }
+
+  async function handleMollieSave(e: React.FormEvent) {
+    e.preventDefault();
+    setMollieSaveStatus("loading");
+    setMollieSaveMessage("");
+
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mollieApiKey: mollieKeyInput || undefined }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Opslaan mislukt.");
+
+      setMaskedMollieKey(body.mollieApiKey);
+      setMollieConfigured(body.mollieApiKeyConfigured);
+      setMollieKeyInput("");
+      setMollieSaveStatus("idle");
+      setMollieSaveMessage("Mollie-instellingen opgeslagen.");
+    } catch (err) {
+      setMollieSaveStatus("error");
+      setMollieSaveMessage(err instanceof Error ? err.message : "Opslaan mislukt.");
+    }
+  }
+
+  async function handleMollieTest() {
+    setMollieTestStatus("loading");
+    setMollieTestMessage("");
+    try {
+      const res = await fetch("/api/payments/test", { method: "POST" });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Testbetaling mislukt.");
+      window.open(body.checkoutUrl, "_blank");
+      setMollieTestStatus("idle");
+    } catch (err) {
+      setMollieTestStatus("error");
+      setMollieTestMessage(err instanceof Error ? err.message : "Testbetaling mislukt.");
     }
   }
 
@@ -157,6 +207,74 @@ export default function SettingsForm({ initial }: { initial: SettingsValues }) {
         >
           {saveStatus === "loading" ? "Opslaan..." : "Instellingen opslaan"}
         </button>
+      </form>
+
+      <form onSubmit={handleMollieSave} className="rounded-[2.5rem] bg-white p-8 shadow-sm">
+        <div className="flex items-center justify-between">
+          <h2 className="font-heading text-xl font-bold">Mollie online betalen</h2>
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-semibold ${
+              mollieConfigured ? "bg-mint-soft text-ink" : "bg-coral-soft text-ink"
+            }`}
+          >
+            {mollieConfigured ? "✓ Geconfigureerd" : "Niet geconfigureerd"}
+          </span>
+        </div>
+        <p className="mt-1 text-sm text-ink-soft">
+          Nodig om klanten de aanbetaling (50%) direct online te laten betalen via{" "}
+          <a href="https://mollie.com" target="_blank" rel="noreferrer" className="underline">
+            Mollie
+          </a>
+          . Gebruik de live API key voor echte betalingen, of een test API key om te testen.
+        </p>
+
+        <div className="mt-6">
+          <label className="text-sm font-semibold">Mollie API key</label>
+          <input
+            type="password"
+            value={mollieKeyInput}
+            onChange={(e) => setMollieKeyInput(e.target.value)}
+            placeholder={maskedMollieKey || "live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}
+            className="mt-2 w-full rounded-2xl border border-ink/10 bg-white px-4 py-3 text-sm focus:border-coral focus:outline-none"
+            autoComplete="off"
+          />
+          <p className="mt-2 text-xs text-ink-soft">
+            {maskedMollieKey
+              ? `Huidige key: ${maskedMollieKey}. Laat leeg om de huidige key te behouden.`
+              : "Vind je API key in het Mollie dashboard onder Developers → API keys."}
+          </p>
+        </div>
+
+        {mollieSaveMessage && (
+          <p
+            className={`mt-5 rounded-xl px-4 py-3 text-sm ${
+              mollieSaveStatus === "error" ? "bg-coral-soft" : "bg-mint-soft"
+            }`}
+          >
+            {mollieSaveMessage}
+          </p>
+        )}
+
+        <div className="mt-6 flex flex-wrap gap-3">
+          <button
+            type="submit"
+            disabled={mollieSaveStatus === "loading"}
+            className="rounded-full bg-ink px-7 py-3.5 text-sm font-semibold text-cream hover:bg-coral disabled:opacity-60"
+          >
+            {mollieSaveStatus === "loading" ? "Opslaan..." : "Instellingen opslaan"}
+          </button>
+          <button
+            type="button"
+            onClick={handleMollieTest}
+            disabled={mollieTestStatus === "loading" || !mollieConfigured}
+            className="rounded-full border-2 border-ink/10 px-7 py-3.5 text-sm font-semibold hover:border-coral disabled:opacity-40"
+          >
+            {mollieTestStatus === "loading" ? "Bezig..." : "Test betaling van €1,-"}
+          </button>
+        </div>
+        {mollieTestMessage && (
+          <p className="mt-4 rounded-xl bg-coral-soft px-4 py-3 text-sm">{mollieTestMessage}</p>
+        )}
       </form>
 
       <form onSubmit={handleTest} className="rounded-[2.5rem] bg-white p-8 shadow-sm">

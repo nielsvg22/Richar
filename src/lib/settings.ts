@@ -5,6 +5,7 @@ export type Settings = {
   resendApiKey: string;
   emailFrom: string;
   emailReplyTo: string;
+  mollieApiKey: string;
 };
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -14,6 +15,7 @@ const defaultSettings: Settings = {
   resendApiKey: "",
   emailFrom: "Rosa & Charlotte <onboarding@resend.dev>",
   emailReplyTo: "hallo@rosaencharlotte.nl",
+  mollieApiKey: "",
 };
 
 function ensureStore(): Settings {
@@ -26,6 +28,7 @@ function ensureStore(): Settings {
       resendApiKey: process.env.RESEND_API_KEY || "",
       emailFrom: process.env.EMAIL_FROM || defaultSettings.emailFrom,
       emailReplyTo: process.env.EMAIL_REPLY_TO || defaultSettings.emailReplyTo,
+      mollieApiKey: process.env.MOLLIE_API_KEY || "",
     };
     fs.writeFileSync(DATA_FILE, JSON.stringify(seeded, null, 2));
   }

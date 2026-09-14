@@ -26,6 +26,8 @@ export default function InstellingenPage() {
             resendApiKeyConfigured: Boolean(settings.resendApiKey),
             emailFrom: settings.emailFrom,
             emailReplyTo: settings.emailReplyTo,
+            mollieApiKey: maskApiKey(settings.mollieApiKey),
+            mollieApiKeyConfigured: Boolean(settings.mollieApiKey),
           }}
         />
       </div>

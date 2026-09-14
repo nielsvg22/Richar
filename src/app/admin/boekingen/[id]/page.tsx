@@ -72,10 +72,34 @@ export default async function BookingDetailPage({
                   <Row label="Extra kinderen" value={booking.extraKidsPrice} />
                 )}
                 {booking.extrasPrice > 0 && <Row label="Extra's" value={booking.extrasPrice} />}
+                {booking.discountAmount > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-ink-soft">Korting ({booking.discountCode})</span>
+                    <span>−€{booking.discountAmount}</span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between border-t border-ink/10 pt-3 font-heading text-lg font-bold">
                   <span>Totaal</span>
                   <span className="text-coral">€{booking.totalPrice}</span>
                 </div>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between rounded-2xl bg-cream-soft p-4 text-sm">
+                <div>
+                  <p className="font-semibold">
+                    Aanbetaling (50%): €{booking.depositAmount}
+                  </p>
+                  <p className="text-ink-soft">
+                    Restant bij het feestje: €{booking.totalPrice - booking.depositAmount}
+                  </p>
+                </div>
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                    booking.depositPaid ? "bg-mint-soft text-ink" : "bg-yellow-soft text-ink"
+                  }`}
+                >
+                  {booking.depositPaid ? "✓ Aanbetaling voldaan" : "Nog niet betaald"}
+                </span>
               </div>
             </div>
           </div>

@@ -88,6 +88,31 @@ export function updateBookingStatus(id: string, status: BookingStatus) {
   return booking;
 }
 
+export function setMolliePaymentId(id: string, molliePaymentId: string) {
+  const bookings = ensureStore();
+  const booking = bookings.find((b) => b.id === id);
+  if (!booking) return undefined;
+  booking.molliePaymentId = molliePaymentId;
+  fs.writeFileSync(DATA_FILE, JSON.stringify(bookings, null, 2));
+  return booking;
+}
+
+export function getBookingByMolliePaymentId(paymentId: string): Booking | undefined {
+  return ensureStore().find((b) => b.molliePaymentId === paymentId);
+}
+
+export function markDepositPaid(id: string) {
+  const bookings = ensureStore();
+  const booking = bookings.find((b) => b.id === id);
+  if (!booking) return undefined;
+  booking.depositPaid = true;
+  if (booking.status === "Nieuw" || booking.status === "In behandeling") {
+    booking.status = "Bevestigd";
+  }
+  fs.writeFileSync(DATA_FILE, JSON.stringify(bookings, null, 2));
+  return booking;
+}
+
 export function recordEmailSent(id: string, type: EmailType) {
   const bookings = ensureStore();
   const booking = bookings.find((b) => b.id === id);
