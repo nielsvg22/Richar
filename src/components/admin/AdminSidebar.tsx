@@ -9,6 +9,7 @@ const links = [
   { href: "/admin/feestjes", label: "Feestjes", emoji: "🎨" },
   { href: "/admin/kortingscodes", label: "Kortingscodes", emoji: "🏷️" },
   { href: "/admin/cadeaubonnen", label: "Cadeaubonnen", emoji: "🎁" },
+  { href: "/admin/facturen", label: "Facturen", emoji: "🧾" },
   { href: "/admin/instellingen", label: "Instellingen", emoji: "⚙️" },
   { href: "/", label: "Naar website", emoji: "🌐" },
 ];
@@ -17,7 +18,7 @@ export default function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-full flex-col gap-1 border-b border-ink/10 bg-white p-4 md:h-screen md:w-64 md:flex-shrink-0 md:border-b-0 md:border-r md:p-6">
+    <aside className="flex w-full flex-col gap-1 border-b border-ink/10 bg-white p-4 print:hidden md:h-screen md:w-64 md:flex-shrink-0 md:border-b-0 md:border-r md:p-6">
       <div className="mb-4 flex items-center gap-2 px-2">
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-coral text-base blob">
           🎉

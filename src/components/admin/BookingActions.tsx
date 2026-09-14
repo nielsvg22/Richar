@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Booking, BookingStatus, EmailType } from "@/lib/bookings";
@@ -119,6 +120,12 @@ export default function BookingActions({ booking }: { booking: Booking }) {
           >
             Contact opnemen
           </a>
+          <Link
+            href={`/admin/facturen/${booking.id}`}
+            className="rounded-full border-2 border-ink/10 px-5 py-3 text-center text-sm font-semibold hover:border-coral hover:text-coral"
+          >
+            Bekijk factuur
+          </Link>
           {status !== "Geannuleerd" && status !== "Afgerond" && (
             <button
               type="button"
