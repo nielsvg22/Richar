@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import StickyMobileCTA from "@/components/StickyMobileCTA";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import JsonLd from "@/components/JsonLd";
+import { getSiteImageSlot, siteImageUrl } from "@/lib/siteImages";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -45,7 +46,12 @@ export const metadata: Metadata = {
   },
 };
 
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  const logoSlot = getSiteImageSlot("logo");
+  const logoUrl = (logoSlot && siteImageUrl(logoSlot)) || "/images/logo.png";
+
   return (
     <html
       lang="nl"
@@ -71,9 +77,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             },
           }}
         />
-        <Navbar />
+        <Navbar logoUrl={logoUrl} />
         <main className="flex-1 pb-16 md:pb-0">{children}</main>
-        <Footer />
+        <Footer logoUrl={logoUrl} />
         <StickyMobileCTA />
         <WhatsAppButton />
       </body>

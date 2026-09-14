@@ -1,7 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
+import { getSiteImageSlot, siteImageUrl } from "@/lib/siteImages";
 
 export default function AboutSection() {
+  const jungleSlot = getSiteImageSlot("team-jungle-party");
+  const officeSlot = getSiteImageSlot("team-office");
+  const jungleUrl = (jungleSlot && siteImageUrl(jungleSlot)) || "/images/team-jungle-party.jpg";
+  const officeUrl = (officeSlot && siteImageUrl(officeSlot)) || "/images/team-office.jpg";
+
   return (
     <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
       <div className="grid items-center gap-12 lg:grid-cols-2">
@@ -9,18 +15,20 @@ export default function AboutSection() {
           <div className="grid grid-cols-2 gap-4">
             <div className="relative aspect-[3/4] translate-y-6 overflow-hidden rounded-[2rem] blob">
               <Image
-                src="/images/team-jungle-party.jpg"
+                src={jungleUrl}
                 alt="Rosa & Charlotte tijdens een kinderfeestje"
                 fill
+                unoptimized
                 sizes="(min-width: 1024px) 25vw, 45vw"
                 className="object-cover"
               />
             </div>
             <div className="relative aspect-[3/4] overflow-hidden rounded-[2rem] blob-2">
               <Image
-                src="/images/team-office.jpg"
+                src={officeUrl}
                 alt="Rosa & Charlotte aan het werk"
                 fill
+                unoptimized
                 sizes="(min-width: 1024px) 25vw, 45vw"
                 className="object-cover"
               />

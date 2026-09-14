@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { locations } from "@/lib/locations";
 
-export default function Footer() {
+export default function Footer({ logoUrl }: { logoUrl: string }) {
   const pathname = usePathname();
   if (pathname?.startsWith("/admin")) return null;
 
@@ -16,10 +16,11 @@ export default function Footer() {
           <div>
             <Link href="/" className="flex items-center gap-2.5">
               <Image
-                src="/images/logo.png"
+                src={logoUrl}
                 alt="Rosa & Charlotte Kinderfeestjes"
                 width={36}
                 height={36}
+                unoptimized
                 className="h-9 w-9 rounded-full object-cover"
               />
               <span className="font-heading text-base font-extrabold">

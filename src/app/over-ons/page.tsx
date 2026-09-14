@@ -2,12 +2,15 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import CTASection from "@/components/CTASection";
 import ReviewSection from "@/components/ReviewSection";
+import { getSiteImageSlot, siteImageUrl } from "@/lib/siteImages";
 
 export const metadata: Metadata = {
   title: "Over ons",
   description:
     "Maak kennis met Rosa & Charlotte: twee enthousiaste ondernemers die kinderfeestjes organiseren die niemand snel vergeet.",
 };
+
+export const dynamic = "force-dynamic";
 
 const values = [
   {
@@ -28,6 +31,11 @@ const values = [
 ];
 
 export default function OverOnsPage() {
+  const jungleSlot = getSiteImageSlot("team-jungle-party");
+  const officeSlot = getSiteImageSlot("team-office");
+  const jungleUrl = (jungleSlot && siteImageUrl(jungleSlot)) || "/images/team-jungle-party.jpg";
+  const officeUrl = (officeSlot && siteImageUrl(officeSlot)) || "/images/team-office.jpg";
+
   return (
     <>
       <section className="mx-auto max-w-7xl px-5 pt-14 sm:px-8 sm:pt-20">
@@ -56,18 +64,20 @@ export default function OverOnsPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="relative aspect-[3/4] translate-y-8 overflow-hidden rounded-[2.5rem] blob">
               <Image
-                src="/images/team-jungle-party.jpg"
+                src={jungleUrl}
                 alt="Rosa & Charlotte tijdens een kinderfeestje"
                 fill
+                unoptimized
                 sizes="(min-width: 1024px) 25vw, 45vw"
                 className="object-cover"
               />
             </div>
             <div className="relative aspect-[3/4] overflow-hidden rounded-[2.5rem] blob-2">
               <Image
-                src="/images/team-office.jpg"
+                src={officeUrl}
                 alt="Rosa & Charlotte aan het werk"
                 fill
+                unoptimized
                 sizes="(min-width: 1024px) 25vw, 45vw"
                 className="object-cover"
               />

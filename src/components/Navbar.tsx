@@ -14,7 +14,7 @@ const links = [
   { href: "/contact", label: "Contact" },
 ];
 
-export default function Navbar() {
+export default function Navbar({ logoUrl }: { logoUrl: string }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -25,10 +25,11 @@ export default function Navbar() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
         <Link href="/" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
           <Image
-            src="/images/logo.png"
+            src={logoUrl}
             alt="Rosa & Charlotte Kinderfeestjes"
             width={40}
             height={40}
+            unoptimized
             className="h-10 w-10 rounded-full object-cover"
             priority
           />
