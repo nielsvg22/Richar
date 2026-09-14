@@ -80,3 +80,14 @@ export function verifyPassword(customer: Customer, password: string): boolean {
   const hash = hashPassword(password, customer.passwordSalt);
   return crypto.timingSafeEqual(Buffer.from(hash), Buffer.from(customer.passwordHash));
 }
+
+export function updateCustomerPassword(id: string, newPassword: string): Customer | undefined {
+  const items = ensureStore();
+  const customer = items.find((c) => c.id === id);
+  if (!customer) return undefined;
+  const salt = crypto.randomBytes(16).toString("hex");
+  customer.passwordSalt = salt;
+  customer.passwordHash = hashPassword(newPassword, salt);
+  writeStore(items);
+  return customer;
+}

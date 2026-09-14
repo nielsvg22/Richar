@@ -5,6 +5,8 @@ import { getCurrentCustomer } from "@/lib/session";
 import { getBooking } from "@/lib/bookings";
 import { getExtra } from "@/lib/pricing";
 import StatusBadge from "@/components/admin/StatusBadge";
+import BookingTimeline from "@/components/BookingTimeline";
+import PayDepositButton from "@/components/PayDepositButton";
 
 export const metadata: Metadata = {
   title: "Mijn boeking",
@@ -33,17 +35,22 @@ export default async function AccountBookingDetailPage({
 
   return (
     <section className="mx-auto max-w-2xl px-5 py-14 sm:px-8 sm:py-20">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <Link href="/account" className="text-sm font-semibold text-ink-soft hover:text-coral">
           ← Terug naar mijn boekingen
         </Link>
-        <Link href={`/draaiboek/${booking.id}`} className="text-sm font-semibold text-coral hover:underline">
-          📋 Bekijk draaiboek
-        </Link>
+        <div className="flex flex-wrap gap-4 text-sm font-semibold text-coral">
+          <Link href={`/draaiboek/${booking.id}`} className="hover:underline">
+            📋 Draaiboek
+          </Link>
+          <Link href={`/account/facturen/${booking.id}`} className="hover:underline">
+            🧾 Factuur
+          </Link>
+        </div>
       </div>
 
       <div className="mt-6 rounded-[2.5rem] bg-white p-8 shadow-sm">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm text-ink-soft">Boekingsnummer {booking.id}</p>
             <h1 className="mt-1 font-heading text-2xl font-extrabold">
@@ -53,7 +60,11 @@ export default async function AccountBookingDetailPage({
           <StatusBadge status={booking.status} />
         </div>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <div className="mt-8">
+          <BookingTimeline status={booking.status} />
+        </div>
+
+        <div className="mt-8 grid gap-4 border-t border-ink/10 pt-6 sm:grid-cols-2">
           <Detail
             label="Datum"
             value={new Date(booking.date).toLocaleDateString("nl-NL", {
@@ -94,10 +105,13 @@ export default async function AccountBookingDetailPage({
           </div>
         </div>
 
-        {!booking.depositPaid && booking.depositAmount > 0 && (
-          <p className="mt-6 rounded-2xl bg-yellow-soft p-4 text-center text-sm font-semibold">
-            Nog niet betaald? We nemen contact met je op, of mail ons via hallo@rosaencharlotte.nl.
-          </p>
+        {!booking.depositPaid && booking.depositAmount > 0 && booking.status !== "Geannuleerd" && (
+          <div className="mt-6">
+            <PayDepositButton bookingId={booking.id} amount={booking.depositAmount} />
+            <p className="mt-3 text-center text-xs text-ink-soft">
+              Liever handmatig betalen? Mail ons via hallo@rosaencharlotte.nl.
+            </p>
+          </div>
         )}
       </div>
     </section>

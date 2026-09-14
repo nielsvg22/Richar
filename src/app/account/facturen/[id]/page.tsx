@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
+import { getCurrentCustomer } from "@/lib/session";
 import { getInvoiceForBooking } from "@/lib/invoices";
 import { getExtra } from "@/lib/pricing";
 import PrintInvoiceButton from "@/components/PrintInvoiceButton";
 
 export const metadata: Metadata = {
-  title: "Factuur",
+  title: "Mijn factuur",
   robots: { index: false, follow: false },
 };
 
@@ -18,28 +19,39 @@ const STATUS_LABELS: Record<string, string> = {
   betaald: "Volledig betaald",
 };
 
-export default async function FactuurDetailPage({
+export default async function AccountFactuurPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const customer = await getCurrentCustomer();
+  if (!customer) redirect("/account/inloggen");
+
   const { id } = await params;
   const invoice = getInvoiceForBooking(id);
-  if (!invoice) notFound();
+  const belongsToCustomer =
+    invoice &&
+    (invoice.booking.customerId === customer.id ||
+      invoice.booking.email.toLowerCase() === customer.email.toLowerCase());
+
+  if (!invoice || !belongsToCustomer) notFound();
 
   const { booking, number, status } = invoice;
   const remaining = booking.depositPaid ? booking.totalPrice - booking.depositAmount : booking.totalPrice;
 
   return (
-    <div>
+    <div className="mx-auto max-w-2xl px-5 py-14 sm:px-8 sm:py-20">
       <div className="flex items-center justify-between print:hidden">
-        <Link href="/admin/facturen" className="text-sm font-semibold text-ink-soft hover:text-coral">
-          ← Terug naar facturen
+        <Link
+          href={`/account/boekingen/${booking.id}`}
+          className="text-sm font-semibold text-ink-soft hover:text-coral"
+        >
+          ← Terug naar boeking
         </Link>
         <PrintInvoiceButton />
       </div>
 
-      <div className="mx-auto mt-6 max-w-2xl rounded-[2.5rem] bg-white p-10 shadow-sm print:rounded-none print:shadow-none">
+      <div className="mt-6 rounded-[2.5rem] bg-white p-10 shadow-sm print:rounded-none print:shadow-none">
         <div className="flex items-start justify-between">
           <div>
             <p className="font-heading text-xl font-extrabold">Rosa &amp; Charlotte</p>
