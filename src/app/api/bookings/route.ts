@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
     redeemVoucherAmount(appliedVoucherCode, voucherAmount);
   }
 
-  const emailResult = await sendBookingConfirmation(booking);
+  const emailResult = await sendBookingConfirmation(booking, request.nextUrl.origin);
   if (emailResult.success) {
     recordEmailSent(booking.id, "confirmation");
     booking.emailsSent = ["confirmation"];

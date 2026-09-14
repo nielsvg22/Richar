@@ -39,8 +39,8 @@ function wrapper(title: string, body: string) {
   </div>`;
 }
 
-function siteUrl() {
-  return process.env.NEXT_PUBLIC_SITE_URL || "https://www.rosaencharlotte.nl";
+function siteUrl(origin?: string) {
+  return origin || process.env.NEXT_PUBLIC_SITE_URL || "https://www.rosaencharlotte.nl";
 }
 
 function formatDate(date: string) {
@@ -111,7 +111,7 @@ export async function sendVoucherEmail(voucher: Voucher) {
   return send(voucher.purchaserEmail, "Jullie cadeaubon is onderweg! 🎁", html);
 }
 
-export async function sendBookingConfirmation(booking: Booking) {
+export async function sendBookingConfirmation(booking: Booking, origin?: string) {
   const extrasList = booking.extras
     .map((id) => getExtra(id)?.name)
     .filter(Boolean)
@@ -132,7 +132,7 @@ export async function sendBookingConfirmation(booking: Booking) {
     </table>
     <p>Heb je in de tussentijd een vraag? Antwoord gewoon op deze e-mail.</p>
     <p style="margin-top:20px;">
-      <a href="${siteUrl()}/account/registreren?email=${encodeURIComponent(booking.email)}" style="display:inline-block;background:#292522;color:#ffffff;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:bold;">Maak een account aan om je boeking te volgen</a>
+      <a href="${siteUrl(origin)}/account/registreren?email=${encodeURIComponent(booking.email)}" style="display:inline-block;background:#292522;color:#ffffff;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:bold;">Maak een account aan om je boeking te volgen</a>
     </p>
     <p>Liefs,<br/>Rosa &amp; Charlotte</p>
     `

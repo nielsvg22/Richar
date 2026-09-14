@@ -25,7 +25,7 @@ export async function POST(
     return NextResponse.json({ error: "Boeking niet gevonden." }, { status: 404 });
   }
 
-  const result = await SENDERS[type](booking);
+  const result = await SENDERS[type](booking, request.nextUrl.origin);
   if (!result.success) {
     return NextResponse.json(
       { error: result.error || "Versturen van de e-mail is mislukt." },
