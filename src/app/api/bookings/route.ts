@@ -5,6 +5,7 @@ import { getPackage, getExtra, EXTRA_CHILD_PRICE } from "@/lib/pricing";
 import { sendBookingConfirmation } from "@/lib/email";
 import { MAX_BOOKINGS_PER_DAY } from "@/lib/availability";
 import { validateDiscount, incrementDiscountUsage } from "@/lib/discounts";
+import { validateVoucher, redeemVoucherAmount } from "@/lib/vouchers";
 
 export async function GET() {
   return NextResponse.json(getBookings());
@@ -29,6 +30,7 @@ export async function POST(request: NextRequest) {
     notes,
     force,
     discountCode,
+    voucherCode,
   } = body;
 
   const theme = getTheme(themeSlug);
@@ -74,7 +76,18 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const totalPrice = Math.max(0, subtotal - discountAmount);
+  let voucherAmount = 0;
+  let appliedVoucherCode: string | null = null;
+  if (voucherCode) {
+    const result = validateVoucher(voucherCode);
+    if (result.valid) {
+      const remainingAfterDiscount = Math.max(0, subtotal - discountAmount);
+      voucherAmount = Math.min(result.voucher!.balance, remainingAfterDiscount);
+      appliedVoucherCode = result.voucher!.code;
+    }
+  }
+
+  const totalPrice = Math.max(0, subtotal - discountAmount - voucherAmount);
   const depositAmount = Math.round(totalPrice * 0.5);
 
   const booking: Booking = {
@@ -101,8 +114,8 @@ export async function POST(request: NextRequest) {
     extrasPrice,
     discountCode: appliedDiscountCode,
     discountAmount,
-    voucherCode: null,
-    voucherAmount: 0,
+    voucherCode: appliedVoucherCode,
+    voucherAmount,
     totalPrice,
     depositAmount,
     depositPaid: false,
@@ -116,6 +129,9 @@ export async function POST(request: NextRequest) {
 
   if (appliedDiscountCode) {
     incrementDiscountUsage(appliedDiscountCode);
+  }
+  if (appliedVoucherCode && voucherAmount > 0) {
+    redeemVoucherAmount(appliedVoucherCode, voucherAmount);
   }
 
   const emailResult = await sendBookingConfirmation(booking);

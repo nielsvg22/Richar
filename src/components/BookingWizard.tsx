@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Theme } from "@/lib/themes";
 import { packages, extras, getPackage, calculatePrice } from "@/lib/pricing";
-import BookingSummary, { type AppliedDiscount } from "./BookingSummary";
+import BookingSummary, { type AppliedDiscount, type AppliedVoucher } from "./BookingSummary";
 import DatePicker from "./DatePicker";
 
 const STEPS = [
@@ -85,6 +85,11 @@ export default function BookingWizard({ themes }: { themes: Theme[] }) {
   const [discountStatus, setDiscountStatus] = useState<"idle" | "loading" | "error">("idle");
   const [discountError, setDiscountError] = useState("");
 
+  const [voucherInput, setVoucherInput] = useState("");
+  const [appliedVoucher, setAppliedVoucher] = useState<AppliedVoucher | null>(null);
+  const [voucherStatus, setVoucherStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [voucherError, setVoucherError] = useState("");
+
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }));
     setErrors((e) => ({ ...e, [key]: "" }));
@@ -136,6 +141,38 @@ export default function BookingWizard({ themes }: { themes: Theme[] }) {
     setDiscountStatus("idle");
   }
 
+  async function applyVoucherCode() {
+    if (!voucherInput.trim()) return;
+    setVoucherStatus("loading");
+    setVoucherError("");
+    try {
+      const res = await fetch("/api/vouchers/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: voucherInput.trim() }),
+      });
+      const body = await res.json();
+      if (!body.valid) {
+        setVoucherStatus("error");
+        setVoucherError(body.error ?? "Deze cadeaubon is ongeldig.");
+        setAppliedVoucher(null);
+        return;
+      }
+      setAppliedVoucher({ code: body.code, balance: body.balance });
+      setVoucherStatus("idle");
+    } catch {
+      setVoucherStatus("error");
+      setVoucherError("Er ging iets mis bij het controleren van de cadeaubon.");
+    }
+  }
+
+  function removeVoucher() {
+    setAppliedVoucher(null);
+    setVoucherInput("");
+    setVoucherError("");
+    setVoucherStatus("idle");
+  }
+
   function validateStep(current: number): boolean {
     const newErrors: Record<string, string> = {};
     if (current === 1 && !form.themeSlug) newErrors.themeSlug = "Kies een thema om verder te gaan.";
@@ -180,7 +217,11 @@ export default function BookingWizard({ themes }: { themes: Theme[] }) {
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, discountCode: appliedDiscount?.code }),
+        body: JSON.stringify({
+          ...form,
+          discountCode: appliedDiscount?.code,
+          voucherCode: appliedVoucher?.code,
+        }),
       });
       if (!res.ok) {
         const body = await res.json();
@@ -507,6 +548,47 @@ export default function BookingWizard({ themes }: { themes: Theme[] }) {
                   )}
                   {discountError && <p className="mt-2 text-sm text-coral">{discountError}</p>}
                 </div>
+
+                <div className="mt-6">
+                  <label htmlFor="voucher" className="text-sm font-semibold">
+                    Cadeaubon
+                  </label>
+                  {appliedVoucher ? (
+                    <div className="mt-2 flex items-center justify-between rounded-2xl border-2 border-mint bg-mint-soft/40 px-4 py-3 text-sm">
+                      <span>
+                        <span className="font-semibold">{appliedVoucher.code}</span> toegepast —
+                        tegoed €{appliedVoucher.balance}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={removeVoucher}
+                        className="text-xs font-semibold text-ink-soft hover:text-coral"
+                      >
+                        Verwijderen
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="mt-2 flex gap-2">
+                      <input
+                        id="voucher"
+                        type="text"
+                        value={voucherInput}
+                        onChange={(e) => setVoucherInput(e.target.value.toUpperCase())}
+                        placeholder="Bijv. RC-AB12-CD34"
+                        className="w-full rounded-2xl border border-ink/10 bg-white px-4 py-3 text-sm focus:border-coral focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={applyVoucherCode}
+                        disabled={voucherStatus === "loading" || !voucherInput.trim()}
+                        className="whitespace-nowrap rounded-2xl bg-ink px-5 py-3 text-sm font-semibold text-cream hover:bg-coral disabled:opacity-60"
+                      >
+                        {voucherStatus === "loading" ? "..." : "Toepassen"}
+                      </button>
+                    </div>
+                  )}
+                  {voucherError && <p className="mt-2 text-sm text-coral">{voucherError}</p>}
+                </div>
               </div>
             )}
 
@@ -667,6 +749,7 @@ export default function BookingWizard({ themes }: { themes: Theme[] }) {
             kids={form.kids}
             extraIds={form.extras}
             discount={appliedDiscount}
+            voucher={appliedVoucher}
           />
         </div>
       </div>

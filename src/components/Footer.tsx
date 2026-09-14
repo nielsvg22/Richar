@@ -75,6 +75,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/cadeaubon" className="hover:text-coral">
+                  Cadeaubon kopen
+                </Link>
+              </li>
+              <li>
                 <Link href="/admin" className="hover:text-coral">
                   Inloggen (team)
                 </Link>

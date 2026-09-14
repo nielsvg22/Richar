@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBookingByMolliePaymentId, markDepositPaid } from "@/lib/bookings";
+import { getVoucherByMolliePaymentId, activateVoucher } from "@/lib/vouchers";
 import { getMolliePayment } from "@/lib/mollie";
+import { sendVoucherEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
@@ -12,16 +14,26 @@ export async function POST(request: NextRequest) {
 
   try {
     const payment = await getMolliePayment(paymentId);
-    const booking = getBookingByMolliePaymentId(paymentId);
+    if (payment.status !== "paid") {
+      return NextResponse.json({ received: true });
+    }
 
-    if (booking && payment.status === "paid" && !booking.depositPaid) {
+    const booking = getBookingByMolliePaymentId(paymentId);
+    if (booking && !booking.depositPaid) {
       markDepositPaid(booking.id);
+      return NextResponse.json({ received: true });
+    }
+
+    const voucher = getVoucherByMolliePaymentId(paymentId);
+    if (voucher && voucher.status === "unpaid") {
+      const activated = activateVoucher(voucher.code);
+      if (activated) await sendVoucherEmail(activated);
     }
 
     return NextResponse.json({ received: true });
   } catch {
     // Mollie retries webhooks; respond 200 even on lookup errors so it doesn't hammer us,
-    // the status page double-checks payment status independently.
+    // the status pages double-check payment status independently.
     return NextResponse.json({ received: true });
   }
 }

@@ -3,6 +3,7 @@ import type { Package } from "@/lib/pricing";
 import { calculatePrice, getExtra } from "@/lib/pricing";
 
 export type AppliedDiscount = { code: string; amount: number; description: string };
+export type AppliedVoucher = { code: string; balance: number };
 
 export default function BookingSummary({
   theme,
@@ -10,12 +11,14 @@ export default function BookingSummary({
   kids,
   extraIds,
   discount,
+  voucher,
 }: {
   theme?: Theme;
   pkg?: Package;
   kids: number;
   extraIds: string[];
   discount?: AppliedDiscount | null;
+  voucher?: AppliedVoucher | null;
 }) {
   if (!pkg) {
     return (
@@ -35,7 +38,9 @@ export default function BookingSummary({
   );
 
   const discountAmount = discount ? Math.min(discount.amount, subtotal) : 0;
-  const total = Math.max(0, subtotal - discountAmount);
+  const afterDiscount = Math.max(0, subtotal - discountAmount);
+  const voucherAmount = voucher ? Math.min(voucher.balance, afterDiscount) : 0;
+  const total = Math.max(0, afterDiscount - voucherAmount);
   const deposit = Math.round(total * 0.5);
   const remaining = total - deposit;
 
@@ -81,6 +86,12 @@ export default function BookingSummary({
             <span className="font-semibold text-coral">−€{discountAmount}</span>
           </div>
         )}
+        {voucher && voucherAmount > 0 && (
+          <div className="flex items-center justify-between">
+            <span className="text-ink-soft">Cadeaubon ({voucher.code})</span>
+            <span className="font-semibold text-coral">−€{voucherAmount}</span>
+          </div>
+        )}
       </div>
 
       <div className="mt-4 flex items-center justify-between border-t border-ink/10 pt-4">
@@ -90,16 +101,22 @@ export default function BookingSummary({
         </span>
       </div>
 
-      <div className="mt-4 space-y-1 rounded-2xl bg-cream-soft p-4 text-sm">
-        <div className="flex items-center justify-between">
-          <span>Aanbetaling nu (50%)</span>
-          <span className="font-semibold">€{deposit}</span>
+      {total === 0 ? (
+        <div className="mt-4 rounded-2xl bg-mint-soft p-4 text-center text-sm font-semibold">
+          Volledig gedekt door je cadeaubon — geen betaling nodig! 🎉
         </div>
-        <div className="flex items-center justify-between text-ink-soft">
-          <span>Restant, te betalen voor het feestje</span>
-          <span>€{remaining}</span>
+      ) : (
+        <div className="mt-4 space-y-1 rounded-2xl bg-cream-soft p-4 text-sm">
+          <div className="flex items-center justify-between">
+            <span>Aanbetaling nu (50%)</span>
+            <span className="font-semibold">€{deposit}</span>
+          </div>
+          <div className="flex items-center justify-between text-ink-soft">
+            <span>Restant, te betalen voor het feestje</span>
+            <span>€{remaining}</span>
+          </div>
         </div>
-      </div>
+      )}
 
       {extrasPrice + extraKidsPrice > 0 && (
         <p className="mt-3 text-xs text-ink-soft">

@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import type { Booking } from "./bookings";
+import type { Voucher } from "./vouchers";
 import { getExtra } from "./pricing";
 import { getSettings } from "./settings";
 
@@ -84,6 +85,26 @@ export async function sendTestEmail(to: string) {
     `
   );
   return send(to, "Testmail — Resend instellingen werken!", html);
+}
+
+export async function sendVoucherEmail(voucher: Voucher) {
+  const html = wrapper(
+    "Jullie cadeaubon is onderweg! 🎁",
+    `
+    <p>Hoi ${voucher.purchaserName.split(" ")[0]},</p>
+    <p>Bedankt voor je aankoop! Hier is de cadeaubon${voucher.recipientName ? ` voor ${voucher.recipientName}` : ""}.</p>
+    <div style="margin:24px 0;padding:24px;border-radius:20px;background:#F6B6C8;text-align:center;">
+      <p style="margin:0;font-size:13px;color:#292522;">Cadeaubon t.w.v.</p>
+      <p style="margin:4px 0;font-size:32px;font-weight:bold;color:#292522;">€${voucher.amount}</p>
+      <p style="margin:8px 0 0;font-size:20px;font-weight:bold;letter-spacing:2px;color:#292522;">${voucher.code}</p>
+    </div>
+    ${voucher.message ? `<p style="font-style:italic;">"${voucher.message}"</p>` : ""}
+    <p>Deze code kan tijdens het boeken van een kinderfeestje worden ingevuld bij "Cadeaubon" en wordt dan automatisch van de prijs afgetrokken.</p>
+    <p>Liefs,<br/>Rosa &amp; Charlotte</p>
+    `
+  );
+
+  return send(voucher.purchaserEmail, "Jullie cadeaubon is onderweg! 🎁", html);
 }
 
 export async function sendBookingConfirmation(booking: Booking) {
