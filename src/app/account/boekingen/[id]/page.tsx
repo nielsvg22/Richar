@@ -7,6 +7,7 @@ import { getExtra } from "@/lib/pricing";
 import StatusBadge from "@/components/admin/StatusBadge";
 import BookingTimeline from "@/components/BookingTimeline";
 import PayDepositButton from "@/components/PayDepositButton";
+import AccountShell from "@/components/AccountShell";
 
 export const metadata: Metadata = {
   title: "Mijn boeking",
@@ -34,9 +35,13 @@ export default async function AccountBookingDetailPage({
   const remaining = booking.depositPaid ? booking.totalPrice - booking.depositAmount : booking.totalPrice;
 
   return (
-    <section className="mx-auto max-w-2xl px-5 py-14 sm:px-8 sm:py-20">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link href="/account" className="text-sm font-semibold text-ink-soft hover:text-coral">
+    <AccountShell
+      name={customer.name}
+      title={`${booking.themeName} — ${booking.childName}`}
+      subtitle={`Boekingsnummer ${booking.id}`}
+    >
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <Link href="/account/bestellingen" className="text-sm font-semibold text-ink-soft hover:text-coral">
           ← Terug naar mijn boekingen
         </Link>
         <div className="flex flex-wrap gap-4 text-sm font-semibold text-coral">
@@ -49,18 +54,13 @@ export default async function AccountBookingDetailPage({
         </div>
       </div>
 
-      <div className="mt-6 rounded-[2.5rem] bg-white p-8 shadow-sm">
+      <div className="rounded-[1.75rem] bg-white p-8 shadow-sm">
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm text-ink-soft">Boekingsnummer {booking.id}</p>
-            <h1 className="mt-1 font-heading text-2xl font-extrabold">
-              {booking.themeName} — {booking.childName}
-            </h1>
-          </div>
+          <p className="text-sm text-ink-soft">Status van deze boeking</p>
           <StatusBadge status={booking.status} />
         </div>
 
-        <div className="mt-8">
+        <div className="mt-6">
           <BookingTimeline status={booking.status} />
         </div>
 
@@ -114,7 +114,7 @@ export default async function AccountBookingDetailPage({
           </div>
         )}
       </div>
-    </section>
+    </AccountShell>
   );
 }
 

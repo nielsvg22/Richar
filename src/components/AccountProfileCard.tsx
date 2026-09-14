@@ -35,9 +35,9 @@ export default function AccountProfileCard({
   }
 
   return (
-    <div className="rounded-[2rem] bg-white p-6 shadow-sm sm:p-8">
+    <div className="rounded-[1.75rem] bg-white p-6 shadow-sm sm:p-8">
       <div className="flex items-center gap-4">
-        <span className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-lavender-soft text-2xl font-heading font-extrabold blob">
+        <span className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-lavender-soft text-2xl font-heading font-extrabold">
           {name.charAt(0).toUpperCase()}
         </span>
         <div>
@@ -46,7 +46,7 @@ export default function AccountProfileCard({
         </div>
       </div>
 
-      <div className="mt-6 space-y-4 border-t border-ink/10 pt-6">
+      <div className="mt-6 grid gap-5 border-t border-ink/10 pt-6 sm:grid-cols-2">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
             E-mailadres

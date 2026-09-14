@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-export default function LogoutButton() {
+export default function LogoutButton({ className }: { className?: string }) {
   const router = useRouter();
 
   async function handleLogout() {
@@ -15,7 +15,10 @@ export default function LogoutButton() {
     <button
       type="button"
       onClick={handleLogout}
-      className="rounded-full border-2 border-ink/10 px-5 py-2.5 text-sm font-semibold hover:border-coral hover:text-coral"
+      className={
+        className ??
+        "rounded-full border-2 border-ink/10 px-5 py-2.5 text-sm font-semibold hover:border-coral hover:text-coral"
+      }
     >
       Uitloggen
     </button>

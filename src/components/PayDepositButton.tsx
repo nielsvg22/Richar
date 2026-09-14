@@ -5,9 +5,11 @@ import { useState } from "react";
 export default function PayDepositButton({
   bookingId,
   amount,
+  compact = false,
 }: {
   bookingId: string;
   amount: number;
+  compact?: boolean;
 }) {
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [error, setError] = useState("");
@@ -28,6 +30,19 @@ export default function PayDepositButton({
       setStatus("error");
       setError(err instanceof Error ? err.message : "Er ging iets mis.");
     }
+  }
+
+  if (compact) {
+    return (
+      <button
+        type="button"
+        onClick={handlePay}
+        disabled={status === "loading"}
+        className="whitespace-nowrap rounded-full bg-coral px-4 py-2 text-xs font-semibold text-white hover:bg-ink disabled:opacity-60"
+      >
+        {status === "loading" ? "Bezig..." : "Betaal nu"}
+      </button>
+    );
   }
 
   return (
