@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import StickyMobileCTA from "@/components/StickyMobileCTA";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import JsonLd from "@/components/JsonLd";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -51,6 +52,25 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${jakarta.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-cream text-ink">
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            name: "Rosa & Charlotte Kinderfeestjes",
+            description:
+              "Creatieve, vrolijke en compleet verzorgde kinderfeestjes voor kinderen van 4 t/m 12 jaar.",
+            url: "https://www.rosaencharlotte.nl",
+            telephone: "+31612345678",
+            email: "hallo@rosaencharlotte.nl",
+            priceRange: "€149-€299",
+            areaServed: ["Apeldoorn", "Deventer", "Arnhem", "Zutphen"],
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: "Apeldoorn",
+              addressCountry: "NL",
+            },
+          }}
+        />
         <Navbar />
         <main className="flex-1 pb-16 md:pb-0">{children}</main>
         <Footer />

@@ -5,6 +5,7 @@ import { getTheme, getThemes } from "@/lib/themes";
 import { packages } from "@/lib/pricing";
 import ThemeGrid from "@/components/ThemeGrid";
 import CTASection from "@/components/CTASection";
+import JsonLd from "@/components/JsonLd";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,43 @@ export default async function ThemeDetailPage({
 
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          serviceType: theme.name,
+          name: `${theme.name} — Rosa & Charlotte Kinderfeestjes`,
+          description: theme.description,
+          provider: { "@type": "LocalBusiness", name: "Rosa & Charlotte Kinderfeestjes" },
+          areaServed: ["Apeldoorn", "Deventer", "Arnhem", "Zutphen"],
+          offers: {
+            "@type": "Offer",
+            price: theme.vanaf,
+            priceCurrency: "EUR",
+          },
+        }}
+      />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: "https://www.rosaencharlotte.nl/" },
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: "Feestjes",
+              item: "https://www.rosaencharlotte.nl/feestjes",
+            },
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: theme.name,
+              item: `https://www.rosaencharlotte.nl/feestjes/${theme.slug}`,
+            },
+          ],
+        }}
+      />
       <section className="mx-auto max-w-7xl px-5 pt-10 sm:px-8 sm:pt-14">
         <Link href="/feestjes" className="text-sm font-semibold text-ink-soft hover:text-coral">
           ← Alle feestjes

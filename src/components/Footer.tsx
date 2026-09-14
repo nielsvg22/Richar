@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { locations } from "@/lib/locations";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -56,6 +57,11 @@ export default function Footer() {
                   Veelgestelde vragen
                 </Link>
               </li>
+              <li>
+                <Link href="/blog" className="hover:text-coral">
+                  Blog
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -95,6 +101,19 @@ export default function Footer() {
               <li>hallo@rosaencharlotte.nl</li>
               <li>06 - 123 456 78</li>
               <li>Actief in Apeldoorn, Deventer, Arnhem en omstreken</li>
+            </ul>
+
+            <h3 className="mt-6 font-heading text-sm font-bold uppercase tracking-wide text-ink/60">
+              Kinderfeestje in
+            </h3>
+            <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+              {locations.map((loc) => (
+                <li key={loc.slug}>
+                  <Link href={`/kinderfeestje/${loc.slug}`} className="hover:text-coral">
+                    {loc.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>

@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getThemes } from "@/lib/themes";
+import { blogPosts } from "@/lib/blog";
+import { locations } from "@/lib/locations";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const themes = getThemes();
@@ -12,6 +14,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/contact",
     "/boeken",
     "/faq",
+    "/blog",
+    "/cadeaubon",
   ].map((route) => ({
     url: `${base}${route}`,
     lastModified: new Date(),
@@ -22,5 +26,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: new Date(),
   }));
 
-  return [...staticRoutes, ...themeRoutes];
+  const blogRoutes = blogPosts.map((post) => ({
+    url: `${base}/blog/${post.slug}`,
+    lastModified: post.publishedAt,
+  }));
+
+  const locationRoutes = locations.map((loc) => ({
+    url: `${base}/kinderfeestje/${loc.slug}`,
+    lastModified: new Date(),
+  }));
+
+  return [...staticRoutes, ...themeRoutes, ...blogRoutes, ...locationRoutes];
 }
