@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import type { Theme } from "@/lib/themes";
 import { packages, extras, getPackage, calculatePrice } from "@/lib/pricing";
@@ -293,6 +294,16 @@ export default function BookingWizard({ themes }: { themes: Theme[] }) {
             </p>
           </div>
         )}
+
+        <div className="mt-6 rounded-2xl bg-cream-soft p-5 text-center">
+          <p className="text-sm font-semibold">Wil je je boeking makkelijk terugvinden?</p>
+          <Link
+            href={`/account/registreren?email=${encodeURIComponent(form.email)}`}
+            className="mt-3 inline-flex rounded-full border-2 border-ink/10 px-6 py-3 text-sm font-semibold hover:border-coral hover:text-coral"
+          >
+            Maak een account aan
+          </Link>
+        </div>
       </div>
     );
   }

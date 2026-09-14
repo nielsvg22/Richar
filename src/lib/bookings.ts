@@ -113,6 +113,26 @@ export function markDepositPaid(id: string) {
   return booking;
 }
 
+export function linkBookingsToCustomer(email: string, customerId: string) {
+  const bookings = ensureStore();
+  let changed = false;
+  for (const booking of bookings) {
+    if (booking.email.toLowerCase() === email.toLowerCase() && !booking.customerId) {
+      booking.customerId = customerId;
+      changed = true;
+    }
+  }
+  if (changed) fs.writeFileSync(DATA_FILE, JSON.stringify(bookings, null, 2));
+}
+
+export function getBookingsForCustomer(customerId: string, email: string): Booking[] {
+  return ensureStore()
+    .filter(
+      (b) => b.customerId === customerId || b.email.toLowerCase() === email.toLowerCase()
+    )
+    .sort((a, b) => (a.date < b.date ? 1 : -1));
+}
+
 export function recordEmailSent(id: string, type: EmailType) {
   const bookings = ensureStore();
   const booking = bookings.find((b) => b.id === id);

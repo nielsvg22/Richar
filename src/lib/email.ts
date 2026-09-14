@@ -39,6 +39,10 @@ function wrapper(title: string, body: string) {
   </div>`;
 }
 
+function siteUrl() {
+  return process.env.NEXT_PUBLIC_SITE_URL || "https://www.rosaencharlotte.nl";
+}
+
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString("nl-NL", {
     weekday: "long",
@@ -127,6 +131,9 @@ export async function sendBookingConfirmation(booking: Booking) {
       <tr><td style="padding:10px 0 0;font-weight:bold;">Totaal</td><td style="padding:10px 0 0;text-align:right;font-weight:bold;color:#F28F79;">€${booking.totalPrice}</td></tr>
     </table>
     <p>Heb je in de tussentijd een vraag? Antwoord gewoon op deze e-mail.</p>
+    <p style="margin-top:20px;">
+      <a href="${siteUrl()}/account/registreren?email=${encodeURIComponent(booking.email)}" style="display:inline-block;background:#292522;color:#ffffff;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:bold;">Maak een account aan om je boeking te volgen</a>
+    </p>
     <p>Liefs,<br/>Rosa &amp; Charlotte</p>
     `
   );

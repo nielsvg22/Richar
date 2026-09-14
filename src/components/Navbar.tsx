@@ -50,7 +50,14 @@ export default function Navbar() {
           ))}
         </nav>
 
-        <div className="hidden md:block">
+        <div className="hidden items-center gap-3 md:flex">
+          <Link
+            href="/account"
+            aria-label="Mijn account"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-ink/5 text-lg hover:bg-mint-soft"
+          >
+            👤
+          </Link>
           <Link
             href="/boeken"
             className="rounded-full bg-ink px-6 py-3 text-sm font-semibold text-cream transition-transform hover:-translate-y-0.5 hover:bg-coral"
@@ -83,6 +90,13 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            <Link
+              href="/account"
+              onClick={() => setOpen(false)}
+              className="rounded-xl px-3 py-3 text-base font-medium text-ink/80"
+            >
+              👤 Mijn account
+            </Link>
             <Link
               href="/boeken"
               onClick={() => setOpen(false)}
