@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import BookingWizard from "@/components/BookingWizard";
+import { getThemes } from "@/lib/themes";
 
 export const metadata: Metadata = {
   title: "Boek jouw feestje",
@@ -8,7 +9,11 @@ export const metadata: Metadata = {
     "Boek eenvoudig jullie kinderfeestje in een paar stappen: kies een thema, pakket, datum en extra's. Zie direct de totaalprijs.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default function BoekenPage() {
+  const themes = getThemes();
+
   return (
     <section className="mx-auto max-w-6xl px-5 py-14 sm:px-8 sm:py-20">
       <div className="mx-auto mb-10 max-w-xl text-center">
@@ -21,7 +26,7 @@ export default function BoekenPage() {
         </p>
       </div>
       <Suspense fallback={<div className="text-center text-ink-soft">Laden...</div>}>
-        <BookingWizard />
+        <BookingWizard themes={themes} />
       </Suspense>
     </section>
   );

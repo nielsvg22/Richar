@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { themes } from "@/lib/themes";
+import type { Theme } from "@/lib/themes";
 import { packages, extras, getPackage } from "@/lib/pricing";
 import BookingSummary from "./BookingSummary";
 
@@ -51,7 +51,7 @@ const initialState: FormState = {
   notes: "",
 };
 
-export default function BookingWizard() {
+export default function BookingWizard({ themes }: { themes: Theme[] }) {
   const searchParams = useSearchParams();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormState>(() => {
@@ -68,7 +68,10 @@ export default function BookingWizard() {
   const [confirmedId, setConfirmedId] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState("");
 
-  const theme = useMemo(() => themes.find((t) => t.slug === form.themeSlug), [form.themeSlug]);
+  const theme = useMemo(
+    () => themes.find((t) => t.slug === form.themeSlug),
+    [themes, form.themeSlug]
+  );
   const pkg = useMemo(() => getPackage(form.packageId), [form.packageId]);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {

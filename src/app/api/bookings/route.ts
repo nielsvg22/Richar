@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getBookings, saveBooking, type Booking } from "@/lib/bookings";
+import { getBookings, saveBooking, recordEmailSent, type Booking } from "@/lib/bookings";
 import { getTheme } from "@/lib/themes";
 import { getPackage, getExtra, EXTRA_CHILD_PRICE } from "@/lib/pricing";
+import { sendBookingConfirmation } from "@/lib/email";
 
 export async function GET() {
   return NextResponse.json(getBookings());
@@ -73,9 +74,16 @@ export async function POST(request: NextRequest) {
     extrasPrice,
     totalPrice,
     status: "Nieuw",
+    emailsSent: [],
   };
 
   saveBooking(booking);
+
+  const emailResult = await sendBookingConfirmation(booking);
+  if (emailResult.success) {
+    recordEmailSent(booking.id, "confirmation");
+    booking.emailsSent = ["confirmation"];
+  }
 
   return NextResponse.json(booking, { status: 201 });
 }

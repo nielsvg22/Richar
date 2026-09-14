@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 
 const links = [
   { href: "/admin", label: "Dashboard", emoji: "📊" },
+  { href: "/admin/agenda", label: "Agenda", emoji: "🗓️" },
+  { href: "/admin/feestjes", label: "Feestjes", emoji: "🎨" },
   { href: "/", label: "Naar website", emoji: "🌐" },
 ];
 
@@ -22,20 +24,24 @@ export default function AdminSidebar() {
         </span>
       </div>
       <nav className="flex gap-1 md:flex-col">
-        {links.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium ${
-              pathname === link.href
-                ? "bg-mint-soft text-ink"
-                : "text-ink-soft hover:bg-cream-soft"
-            }`}
-          >
-            <span>{link.emoji}</span>
-            {link.label}
-          </Link>
-        ))}
+        {links.map((link) => {
+          const isActive =
+            link.href === "/admin" || link.href === "/"
+              ? pathname === link.href
+              : pathname?.startsWith(link.href);
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium ${
+                isActive ? "bg-mint-soft text-ink" : "text-ink-soft hover:bg-cream-soft"
+              }`}
+            >
+              <span>{link.emoji}</span>
+              {link.label}
+            </Link>
+          );
+        })}
       </nav>
     </aside>
   );

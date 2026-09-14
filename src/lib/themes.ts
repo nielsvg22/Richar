@@ -1,19 +1,10 @@
-export type Theme = {
-  slug: string;
-  name: string;
-  emoji: string;
-  tagline: string;
-  description: string;
-  longDescription: string;
-  ageRange: string;
-  vanaf: number;
-  gradient: string;
-  activities: string[];
-  includes: string[];
-  featured: boolean;
-};
+import fs from "fs";
+import path from "path";
+import type { Theme } from "./theme-constants";
 
-export const themes: Theme[] = [
+export type { Theme } from "./theme-constants";
+
+const defaultThemes: Theme[] = [
   {
     slug: "prinsessenfeest",
     name: "Prinsessenfeest",
@@ -274,8 +265,76 @@ export const themes: Theme[] = [
   },
 ];
 
-export function getTheme(slug: string) {
-  return themes.find((t) => t.slug === slug);
+const DATA_DIR = path.join(process.cwd(), "data");
+const DATA_FILE = path.join(DATA_DIR, "themes.json");
+
+function ensureStore(): Theme[] {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+  if (!fs.existsSync(DATA_FILE)) {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(defaultThemes, null, 2));
+  }
+  const raw = fs.readFileSync(DATA_FILE, "utf-8");
+  try {
+    return JSON.parse(raw) as Theme[];
+  } catch {
+    return [];
+  }
 }
 
-export const featuredThemes = themes.filter((t) => t.featured);
+function writeStore(themes: Theme[]) {
+  fs.writeFileSync(DATA_FILE, JSON.stringify(themes, null, 2));
+}
+
+export function getThemes(): Theme[] {
+  return ensureStore();
+}
+
+export function getTheme(slug: string): Theme | undefined {
+  return ensureStore().find((t) => t.slug === slug);
+}
+
+export function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+export function createTheme(data: Omit<Theme, "slug"> & { slug?: string }): Theme {
+  const themes = ensureStore();
+  const baseSlug = slugify(data.slug || data.name);
+  let slug = baseSlug;
+  let counter = 2;
+  while (themes.some((t) => t.slug === slug)) {
+    slug = `${baseSlug}-${counter}`;
+    counter += 1;
+  }
+  const theme: Theme = { ...data, slug };
+  themes.push(theme);
+  writeStore(themes);
+  return theme;
+}
+
+export function updateTheme(slug: string, data: Partial<Theme>): Theme | undefined {
+  const themes = ensureStore();
+  const index = themes.findIndex((t) => t.slug === slug);
+  if (index === -1) return undefined;
+  const cleanData = Object.fromEntries(
+    Object.entries(data).filter(([, value]) => value !== undefined)
+  );
+  themes[index] = { ...themes[index], ...cleanData, slug: themes[index].slug };
+  writeStore(themes);
+  return themes[index];
+}
+
+export function deleteTheme(slug: string): boolean {
+  const themes = ensureStore();
+  const next = themes.filter((t) => t.slug !== slug);
+  if (next.length === themes.length) return false;
+  writeStore(next);
+  return true;
+}

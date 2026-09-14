@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { sendContactAutoReply } from "@/lib/email";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const DATA_FILE = path.join(DATA_DIR, "contact-requests.json");
@@ -31,6 +32,8 @@ export async function POST(request: NextRequest) {
   });
 
   fs.writeFileSync(DATA_FILE, JSON.stringify(existing, null, 2));
+
+  await sendContactAutoReply(name, email);
 
   return NextResponse.json({ success: true });
 }

@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
-import { themes } from "@/lib/themes";
+import { getThemes } from "@/lib/themes";
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  const themes = getThemes();
   const base = "https://www.rosaencharlotte.nl";
   const staticRoutes = [
     "",

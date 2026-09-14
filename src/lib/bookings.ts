@@ -33,7 +33,10 @@ export type Booking = {
   extrasPrice: number;
   totalPrice: number;
   status: BookingStatus;
+  emailsSent: EmailType[];
 };
+
+export type EmailType = "confirmation" | "reminder" | "review";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const DATA_FILE = path.join(DATA_DIR, "bookings.json");
@@ -77,6 +80,16 @@ export function updateBookingStatus(id: string, status: BookingStatus) {
   return booking;
 }
 
+export function recordEmailSent(id: string, type: EmailType) {
+  const bookings = ensureStore();
+  const booking = bookings.find((b) => b.id === id);
+  if (!booking) return undefined;
+  if (!booking.emailsSent) booking.emailsSent = [];
+  if (!booking.emailsSent.includes(type)) booking.emailsSent.push(type);
+  fs.writeFileSync(DATA_FILE, JSON.stringify(bookings, null, 2));
+  return booking;
+}
+
 function seedBookings(): Booking[] {
   const today = new Date();
   const inDays = (n: number) => {
@@ -109,6 +122,7 @@ function seedBookings(): Booking[] {
       extrasPrice: 121,
       totalPrice: 320,
       status: "Bevestigd",
+      emailsSent: [],
     },
     {
       id: "RC-1043",
@@ -134,6 +148,7 @@ function seedBookings(): Booking[] {
       extrasPrice: 0,
       totalPrice: 149,
       status: "Betaald",
+      emailsSent: [],
     },
     {
       id: "RC-1044",
@@ -159,6 +174,7 @@ function seedBookings(): Booking[] {
       extrasPrice: 200,
       totalPrice: 499,
       status: "In behandeling",
+      emailsSent: [],
     },
     {
       id: "RC-1045",
@@ -184,6 +200,7 @@ function seedBookings(): Booking[] {
       extrasPrice: 35,
       totalPrice: 252,
       status: "Nieuw",
+      emailsSent: [],
     },
     {
       id: "RC-1046",
@@ -209,6 +226,7 @@ function seedBookings(): Booking[] {
       extrasPrice: 35,
       totalPrice: 184,
       status: "Afgerond",
+      emailsSent: [],
     },
   ];
 }

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ThemeGrid from "@/components/ThemeGrid";
 import CTASection from "@/components/CTASection";
-import { themes } from "@/lib/themes";
+import { getThemes } from "@/lib/themes";
 
 export const metadata: Metadata = {
   title: "Alle kinderfeestjes thema's",
@@ -10,7 +10,11 @@ export const metadata: Metadata = {
     "Bekijk alle kinderfeestjes thema's van Rosa & Charlotte: van prinsessenfeest tot wetenschapsfeest. Compleet verzorgd, voor kinderen van 4 t/m 12 jaar.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default function FeestjesPage() {
+  const themes = getThemes();
+
   return (
     <>
       <section className="mx-auto max-w-7xl px-5 pb-4 pt-14 sm:px-8 sm:pt-20">

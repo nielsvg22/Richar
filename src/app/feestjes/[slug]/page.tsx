@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTheme, themes } from "@/lib/themes";
+import { getTheme, getThemes } from "@/lib/themes";
 import { packages } from "@/lib/pricing";
 import ThemeGrid from "@/components/ThemeGrid";
 import CTASection from "@/components/CTASection";
 
-export function generateStaticParams() {
-  return themes.map((theme) => ({ slug: theme.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -38,7 +36,7 @@ export default async function ThemeDetailPage({
   const theme = getTheme(slug);
   if (!theme) notFound();
 
-  const otherThemes = themes.filter((t) => t.slug !== theme.slug).slice(0, 4);
+  const otherThemes = getThemes().filter((t) => t.slug !== theme.slug).slice(0, 4);
 
   return (
     <>

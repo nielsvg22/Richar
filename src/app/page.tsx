@@ -7,17 +7,19 @@ import AboutSection from "@/components/AboutSection";
 import ReviewSection from "@/components/ReviewSection";
 import FAQAccordion from "@/components/FAQAccordion";
 import CTASection from "@/components/CTASection";
-import { themes } from "@/lib/themes";
+import { getThemes } from "@/lib/themes";
 import { faqItems } from "@/lib/faq";
 import Link from "next/link";
 
-const homeThemes = themes.filter((t) =>
-  ["beautyfeest", "unicornfeest", "knutselfeest", "bakfeest", "dansfeest", "speurtocht", "dino-feest", "superheldenfeest"].includes(
-    t.slug
-  )
-);
+export const dynamic = "force-dynamic";
 
 export default function Home() {
+  const themes = getThemes();
+  const homeThemes = [
+    ...themes.filter((t) => t.featured),
+    ...themes.filter((t) => !t.featured),
+  ].slice(0, 8);
+
   return (
     <>
       <Hero />
