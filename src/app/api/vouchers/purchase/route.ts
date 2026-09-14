@@ -20,14 +20,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (!isMollieConfigured()) {
+  if (!(await isMollieConfigured())) {
     return NextResponse.json(
       { error: "Online betalen is nog niet ingesteld. Neem contact met ons op om een cadeaubon te kopen." },
       { status: 503 }
     );
   }
 
-  const voucher = createVoucher({
+  const voucher = await createVoucher({
     amount: amountNum,
     purchaserName,
     purchaserEmail,
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       metadata: { type: "voucher", code: voucher.code },
     });
 
-    setVoucherMolliePaymentId(voucher.code, payment.id);
+    await setVoucherMolliePaymentId(voucher.code, payment.id);
 
     return NextResponse.json({ checkoutUrl: payment._links.checkout?.href });
   } catch (err) {

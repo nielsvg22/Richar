@@ -17,10 +17,10 @@ export default async function DraaiboekPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const booking = getBooking(id);
+  const booking = await getBooking(id);
   if (!booking) notFound();
 
-  const theme = getTheme(booking.themeSlug);
+  const theme = await getTheme(booking.themeSlug);
   const eventDate = new Date(booking.date);
   const today = new Date();
   today.setHours(0, 0, 0, 0);

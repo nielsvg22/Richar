@@ -25,7 +25,7 @@ export default async function AccountBookingDetailPage({
   if (!customer) redirect("/account/inloggen");
 
   const { id } = await params;
-  const booking = getBooking(id);
+  const booking = await getBooking(id);
 
   const belongsToCustomer =
     booking && (booking.customerId === customer.id || booking.email.toLowerCase() === customer.email.toLowerCase());

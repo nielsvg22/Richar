@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { sql, ensureSchema } from "./db";
 import type { Theme } from "./theme-constants";
 
 export type { Theme } from "./theme-constants";
@@ -265,34 +264,63 @@ const defaultThemes: Theme[] = [
   },
 ];
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const DATA_FILE = path.join(DATA_DIR, "themes.json");
+type ThemeRow = {
+  slug: string;
+  name: string;
+  emoji: string;
+  tagline: string;
+  description: string;
+  long_description: string;
+  age_range: string;
+  vanaf: number;
+  gradient: string;
+  activities: string[];
+  includes: string[];
+  featured: boolean;
+};
 
-function ensureStore(): Theme[] {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-  if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(defaultThemes, null, 2));
-  }
-  const raw = fs.readFileSync(DATA_FILE, "utf-8");
-  try {
-    return JSON.parse(raw) as Theme[];
-  } catch {
-    return [];
+function rowToTheme(row: ThemeRow): Theme {
+  return {
+    slug: row.slug,
+    name: row.name,
+    emoji: row.emoji,
+    tagline: row.tagline,
+    description: row.description,
+    longDescription: row.long_description,
+    ageRange: row.age_range,
+    vanaf: row.vanaf,
+    gradient: row.gradient,
+    activities: row.activities,
+    includes: row.includes,
+    featured: row.featured,
+  };
+}
+
+async function ensureSeeded() {
+  await ensureSchema();
+  const [{ count }] = await sql<{ count: string }[]>`SELECT COUNT(*)::text FROM themes`;
+  if (Number(count) === 0) {
+    for (let i = 0; i < defaultThemes.length; i++) {
+      const t = defaultThemes[i];
+      await sql`
+        INSERT INTO themes (slug, name, emoji, tagline, description, long_description, age_range, vanaf, gradient, activities, includes, featured, sort_order)
+        VALUES (${t.slug}, ${t.name}, ${t.emoji}, ${t.tagline}, ${t.description}, ${t.longDescription}, ${t.ageRange}, ${t.vanaf}, ${t.gradient}, ${sql.json(t.activities)}, ${sql.json(t.includes)}, ${t.featured}, ${i})
+        ON CONFLICT (slug) DO NOTHING
+      `;
+    }
   }
 }
 
-function writeStore(themes: Theme[]) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(themes, null, 2));
+export async function getThemes(): Promise<Theme[]> {
+  await ensureSeeded();
+  const rows = await sql<ThemeRow[]>`SELECT * FROM themes ORDER BY sort_order ASC`;
+  return rows.map(rowToTheme);
 }
 
-export function getThemes(): Theme[] {
-  return ensureStore();
-}
-
-export function getTheme(slug: string): Theme | undefined {
-  return ensureStore().find((t) => t.slug === slug);
+export async function getTheme(slug: string): Promise<Theme | undefined> {
+  await ensureSeeded();
+  const rows = await sql<ThemeRow[]>`SELECT * FROM themes WHERE slug = ${slug}`;
+  return rows[0] ? rowToTheme(rows[0]) : undefined;
 }
 
 export function slugify(value: string): string {
@@ -304,37 +332,52 @@ export function slugify(value: string): string {
     .replace(/(^-|-$)/g, "");
 }
 
-export function createTheme(data: Omit<Theme, "slug"> & { slug?: string }): Theme {
-  const themes = ensureStore();
+export async function createTheme(data: Omit<Theme, "slug"> & { slug?: string }): Promise<Theme> {
+  await ensureSeeded();
   const baseSlug = slugify(data.slug || data.name);
   let slug = baseSlug;
   let counter = 2;
-  while (themes.some((t) => t.slug === slug)) {
+  while ((await getTheme(slug)) !== undefined) {
     slug = `${baseSlug}-${counter}`;
     counter += 1;
   }
+  const [{ max }] = await sql<{ max: number | null }[]>`SELECT MAX(sort_order) as max FROM themes`;
   const theme: Theme = { ...data, slug };
-  themes.push(theme);
-  writeStore(themes);
+  await sql`
+    INSERT INTO themes (slug, name, emoji, tagline, description, long_description, age_range, vanaf, gradient, activities, includes, featured, sort_order)
+    VALUES (${theme.slug}, ${theme.name}, ${theme.emoji}, ${theme.tagline}, ${theme.description}, ${theme.longDescription}, ${theme.ageRange}, ${theme.vanaf}, ${theme.gradient}, ${sql.json(theme.activities)}, ${sql.json(theme.includes)}, ${theme.featured}, ${(max ?? -1) + 1})
+  `;
   return theme;
 }
 
-export function updateTheme(slug: string, data: Partial<Theme>): Theme | undefined {
-  const themes = ensureStore();
-  const index = themes.findIndex((t) => t.slug === slug);
-  if (index === -1) return undefined;
+export async function updateTheme(slug: string, data: Partial<Theme>): Promise<Theme | undefined> {
+  await ensureSeeded();
+  const existing = await getTheme(slug);
+  if (!existing) return undefined;
   const cleanData = Object.fromEntries(
     Object.entries(data).filter(([, value]) => value !== undefined)
   );
-  themes[index] = { ...themes[index], ...cleanData, slug: themes[index].slug };
-  writeStore(themes);
-  return themes[index];
+  const next: Theme = { ...existing, ...cleanData, slug: existing.slug };
+  await sql`
+    UPDATE themes SET
+      name = ${next.name},
+      emoji = ${next.emoji},
+      tagline = ${next.tagline},
+      description = ${next.description},
+      long_description = ${next.longDescription},
+      age_range = ${next.ageRange},
+      vanaf = ${next.vanaf},
+      gradient = ${next.gradient},
+      activities = ${sql.json(next.activities)},
+      includes = ${sql.json(next.includes)},
+      featured = ${next.featured}
+    WHERE slug = ${slug}
+  `;
+  return next;
 }
 
-export function deleteTheme(slug: string): boolean {
-  const themes = ensureStore();
-  const next = themes.filter((t) => t.slug !== slug);
-  if (next.length === themes.length) return false;
-  writeStore(next);
-  return true;
+export async function deleteTheme(slug: string): Promise<boolean> {
+  await ensureSeeded();
+  const result = await sql`DELETE FROM themes WHERE slug = ${slug}`;
+  return result.count > 0;
 }

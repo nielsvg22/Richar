@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "code ontbreekt." }, { status: 400 });
   }
 
-  const voucher = getVoucher(code);
+  const voucher = await getVoucher(code);
   if (!voucher) {
     return NextResponse.json({ error: "Cadeaubon niet gevonden." }, { status: 404 });
   }
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
   try {
     const payment = await getMolliePayment(voucher.molliePaymentId);
     if (payment.status === "paid") {
-      const activated = activateVoucher(voucher.code);
+      const activated = await activateVoucher(voucher.code);
       if (activated) await sendVoucherEmail(activated);
       return NextResponse.json({ active: true, status: "active" });
     }

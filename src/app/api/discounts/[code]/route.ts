@@ -9,7 +9,7 @@ export async function PATCH(
   const body = await request.json();
   const { type, value, description, active, expiresAt, usageLimit } = body;
 
-  const updated = updateDiscount(code, {
+  const updated = await updateDiscount(code, {
     type,
     value: value !== undefined ? Number(value) : undefined,
     description,
@@ -29,7 +29,7 @@ export async function DELETE(
   { params }: { params: Promise<{ code: string }> }
 ) {
   const { code } = await params;
-  const deleted = deleteDiscount(code);
+  const deleted = await deleteDiscount(code);
   if (!deleted) {
     return NextResponse.json({ error: "Kortingscode niet gevonden." }, { status: 404 });
   }

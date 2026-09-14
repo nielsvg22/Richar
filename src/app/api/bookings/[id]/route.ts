@@ -20,7 +20,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const booking = getBooking(id);
+  const booking = await getBooking(id);
   if (!booking) {
     return NextResponse.json({ error: "Boeking niet gevonden." }, { status: 404 });
   }
@@ -38,7 +38,7 @@ export async function PATCH(
     if (!VALID_STATUSES.includes(body.status)) {
       return NextResponse.json({ error: "Ongeldige status." }, { status: 400 });
     }
-    const booking = updateBookingStatus(id, body.status);
+    const booking = await updateBookingStatus(id, body.status);
     if (!booking) {
       return NextResponse.json({ error: "Boeking niet gevonden." }, { status: 404 });
     }
@@ -46,7 +46,7 @@ export async function PATCH(
   }
 
   if (body.internalNotes !== undefined) {
-    const booking = setInternalNotes(id, String(body.internalNotes));
+    const booking = await setInternalNotes(id, String(body.internalNotes));
     if (!booking) {
       return NextResponse.json({ error: "Boeking niet gevonden." }, { status: 404 });
     }

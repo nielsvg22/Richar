@@ -9,7 +9,7 @@ export async function PATCH(
   const body = await request.json();
   const { name, quantity, unit, lowStockThreshold } = body;
 
-  const item = updateInventoryItem(id, {
+  const item = await updateInventoryItem(id, {
     name,
     quantity: quantity !== undefined ? Number(quantity) : undefined,
     unit,
@@ -27,7 +27,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const deleted = deleteInventoryItem(id);
+  const deleted = await deleteInventoryItem(id);
   if (!deleted) {
     return NextResponse.json({ error: "Item niet gevonden." }, { status: 404 });
   }

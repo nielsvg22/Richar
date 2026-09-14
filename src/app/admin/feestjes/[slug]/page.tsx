@@ -17,7 +17,7 @@ export default async function BewerkThemaPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const theme = getTheme(slug);
+  const theme = await getTheme(slug);
   if (!theme) notFound();
 
   return (

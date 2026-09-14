@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { sql, ensureSchema } from "./db";
 
 export type SiteImageSlot = {
   id: string;
@@ -35,27 +36,69 @@ export const SITE_IMAGE_SLOTS: SiteImageSlot[] = [
   },
 ];
 
-const IMAGES_DIR = path.join(process.cwd(), "public", "images");
-
 export function getSiteImageSlot(id: string): SiteImageSlot | undefined {
   return SITE_IMAGE_SLOTS.find((slot) => slot.id === id);
 }
 
-export function siteImageExists(slot: SiteImageSlot): boolean {
-  return fs.existsSync(path.join(IMAGES_DIR, slot.filename));
+function guessContentType(filename: string): string {
+  if (filename.endsWith(".png")) return "image/png";
+  if (filename.endsWith(".webp")) return "image/webp";
+  return "image/jpeg";
 }
 
-export function siteImageUrl(slot: SiteImageSlot): string | null {
-  const filePath = path.join(IMAGES_DIR, slot.filename);
-  try {
-    const version = Math.floor(fs.statSync(filePath).mtimeMs);
-    return `/images/${slot.filename}?v=${version}`;
-  } catch {
-    return null;
+async function ensureSeededImages() {
+  await ensureSchema();
+  const rows = await sql<{ slot_id: string }[]>`SELECT slot_id FROM site_images`;
+  const seededIds = new Set(rows.map((r) => r.slot_id));
+
+  for (const slot of SITE_IMAGE_SLOTS) {
+    if (seededIds.has(slot.id)) continue;
+    const filePath = path.join(process.cwd(), "public", "images", slot.filename);
+    if (!fs.existsSync(filePath)) continue;
+    const buffer = fs.readFileSync(filePath);
+    await sql`
+      INSERT INTO site_images (slot_id, filename, content_type, data, updated_at)
+      VALUES (${slot.id}, ${slot.filename}, ${guessContentType(slot.filename)}, ${buffer}, now())
+      ON CONFLICT (slot_id) DO NOTHING
+    `;
   }
 }
 
-export function saveSiteImage(slot: SiteImageSlot, buffer: Buffer) {
-  if (!fs.existsSync(IMAGES_DIR)) fs.mkdirSync(IMAGES_DIR, { recursive: true });
-  fs.writeFileSync(path.join(IMAGES_DIR, slot.filename), buffer);
+export async function siteImageExists(slot: SiteImageSlot): Promise<boolean> {
+  await ensureSeededImages();
+  const rows = await sql`SELECT 1 FROM site_images WHERE slot_id = ${slot.id}`;
+  return rows.length > 0;
+}
+
+export async function siteImageUrl(slot: SiteImageSlot): Promise<string | null> {
+  await ensureSeededImages();
+  const rows = await sql<{ updated_at: Date }[]>`
+    SELECT updated_at FROM site_images WHERE slot_id = ${slot.id}
+  `;
+  if (!rows[0]) return null;
+  return `/api/site-images/${slot.id}?v=${rows[0].updated_at.getTime()}`;
+}
+
+export async function getSiteImageData(
+  slotId: string
+): Promise<{ data: Buffer; contentType: string } | undefined> {
+  await ensureSeededImages();
+  const rows = await sql<{ data: Buffer; content_type: string }[]>`
+    SELECT data, content_type FROM site_images WHERE slot_id = ${slotId}
+  `;
+  if (!rows[0]) return undefined;
+  return { data: rows[0].data, contentType: rows[0].content_type };
+}
+
+export async function saveSiteImage(slot: SiteImageSlot, buffer: Buffer, contentType: string) {
+  await ensureSchema();
+  await sql`
+    INSERT INTO site_images (slot_id, filename, content_type, data, updated_at)
+    VALUES (${slot.id}, ${slot.filename}, ${contentType}, ${buffer}, now())
+    ON CONFLICT (slot_id) DO UPDATE SET
+      filename = EXCLUDED.filename,
+      content_type = EXCLUDED.content_type,
+      data = EXCLUDED.data,
+      updated_at = now()
+  `;
 }

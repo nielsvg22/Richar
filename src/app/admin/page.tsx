@@ -35,7 +35,7 @@ export default async function AdminDashboard({
       ? (statusParam as BookingStatus | "Alle")
       : "Alle";
 
-  const bookings = getBookings();
+  const bookings = await getBookings();
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
@@ -53,8 +53,8 @@ export default async function AdminDashboard({
   const filteredBookings =
     activeFilter === "Alle" ? bookings : bookings.filter((b) => b.status === activeFilter);
 
-  const monthlyRevenue = getMonthlyRevenue(6);
-  const revenueByTheme = getRevenueByTheme(6);
+  const monthlyRevenue = await getMonthlyRevenue(6);
+  const revenueByTheme = await getRevenueByTheme(6);
 
   return (
     <div>

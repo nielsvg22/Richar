@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default function AdminFeestjesPage() {
-  const themes = getThemes();
+export default async function AdminFeestjesPage() {
+  const themes = await getThemes();
 
   return (
     <div>

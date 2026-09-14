@@ -19,7 +19,7 @@ export default async function BetaaldPage({
   const { bookingId } = await searchParams;
   if (!bookingId) notFound();
 
-  const booking = getBooking(bookingId);
+  const booking = await getBooking(bookingId);
   if (!booking) notFound();
 
   return (

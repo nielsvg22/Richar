@@ -18,7 +18,7 @@ export default async function AccountPage() {
   const customer = await getCurrentCustomer();
   if (!customer) redirect("/account/inloggen");
 
-  const bookings = getBookingsForCustomer(customer.id, customer.email);
+  const bookings = await getBookingsForCustomer(customer.id, customer.email);
   const now = new Date();
   const upcoming = bookings
     .filter((b) => new Date(b.date) >= now && b.status !== "Geannuleerd")

@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { sql, ensureSchema } from "./db";
 
 export type VoucherStatus = "unpaid" | "active" | "redeemed" | "expired";
 
@@ -16,30 +15,44 @@ export type Voucher = {
   createdAt: string;
 };
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const DATA_FILE = path.join(DATA_DIR, "vouchers.json");
+type VoucherRow = {
+  code: string;
+  amount: number;
+  balance: number;
+  purchaser_name: string;
+  purchaser_email: string;
+  recipient_name: string;
+  message: string;
+  status: string;
+  mollie_payment_id: string | null;
+  created_at: Date;
+};
 
-function ensureStore(): Voucher[] {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, JSON.stringify([], null, 2));
-  const raw = fs.readFileSync(DATA_FILE, "utf-8");
-  try {
-    return JSON.parse(raw) as Voucher[];
-  } catch {
-    return [];
-  }
+function rowToVoucher(row: VoucherRow): Voucher {
+  return {
+    code: row.code,
+    amount: row.amount,
+    balance: row.balance,
+    purchaserName: row.purchaser_name,
+    purchaserEmail: row.purchaser_email,
+    recipientName: row.recipient_name,
+    message: row.message,
+    status: row.status as VoucherStatus,
+    molliePaymentId: row.mollie_payment_id,
+    createdAt: row.created_at.toISOString(),
+  };
 }
 
-function writeStore(items: Voucher[]) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(items, null, 2));
+export async function getVouchers(): Promise<Voucher[]> {
+  await ensureSchema();
+  const rows = await sql<VoucherRow[]>`SELECT * FROM vouchers ORDER BY created_at DESC`;
+  return rows.map(rowToVoucher);
 }
 
-export function getVouchers(): Voucher[] {
-  return ensureStore().sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
-}
-
-export function getVoucher(code: string): Voucher | undefined {
-  return ensureStore().find((v) => v.code.toUpperCase() === code.toUpperCase());
+export async function getVoucher(code: string): Promise<Voucher | undefined> {
+  await ensureSchema();
+  const rows = await sql<VoucherRow[]>`SELECT * FROM vouchers WHERE upper(code) = upper(${code})`;
+  return rows[0] ? rowToVoucher(rows[0]) : undefined;
 }
 
 function generateCode(): string {
@@ -52,16 +65,16 @@ function generateCode(): string {
   return code;
 }
 
-export function createVoucher(data: {
+export async function createVoucher(data: {
   amount: number;
   purchaserName: string;
   purchaserEmail: string;
   recipientName: string;
   message: string;
-}): Voucher {
-  const items = ensureStore();
+}): Promise<Voucher> {
+  await ensureSchema();
   let code = generateCode();
-  while (items.some((v) => v.code === code)) {
+  while (await getVoucher(code)) {
     code = generateCode();
   }
   const voucher: Voucher = {
@@ -76,47 +89,45 @@ export function createVoucher(data: {
     molliePaymentId: null,
     createdAt: new Date().toISOString(),
   };
-  items.push(voucher);
-  writeStore(items);
+  await sql`
+    INSERT INTO vouchers (code, amount, balance, purchaser_name, purchaser_email, recipient_name, message, status, mollie_payment_id, created_at)
+    VALUES (${voucher.code}, ${voucher.amount}, ${voucher.balance}, ${voucher.purchaserName}, ${voucher.purchaserEmail}, ${voucher.recipientName}, ${voucher.message}, ${voucher.status}, ${voucher.molliePaymentId}, ${voucher.createdAt})
+  `;
   return voucher;
 }
 
-export function setVoucherMolliePaymentId(code: string, molliePaymentId: string) {
-  const items = ensureStore();
-  const voucher = items.find((v) => v.code === code);
+export async function setVoucherMolliePaymentId(code: string, molliePaymentId: string) {
+  await ensureSchema();
+  await sql`UPDATE vouchers SET mollie_payment_id = ${molliePaymentId} WHERE code = ${code}`;
+  return getVoucher(code);
+}
+
+export async function getVoucherByMolliePaymentId(paymentId: string): Promise<Voucher | undefined> {
+  await ensureSchema();
+  const rows = await sql<VoucherRow[]>`SELECT * FROM vouchers WHERE mollie_payment_id = ${paymentId}`;
+  return rows[0] ? rowToVoucher(rows[0]) : undefined;
+}
+
+export async function activateVoucher(code: string) {
+  await ensureSchema();
+  await sql`UPDATE vouchers SET status = 'active' WHERE code = ${code} AND status = 'unpaid'`;
+  return getVoucher(code);
+}
+
+export async function redeemVoucherAmount(code: string, amount: number) {
+  await ensureSchema();
+  const voucher = await getVoucher(code);
   if (!voucher) return undefined;
-  voucher.molliePaymentId = molliePaymentId;
-  writeStore(items);
-  return voucher;
+  const newBalance = Math.max(0, voucher.balance - amount);
+  const newStatus = newBalance === 0 ? "redeemed" : voucher.status;
+  await sql`UPDATE vouchers SET balance = ${newBalance}, status = ${newStatus} WHERE upper(code) = upper(${code})`;
+  return getVoucher(code);
 }
 
-export function getVoucherByMolliePaymentId(paymentId: string): Voucher | undefined {
-  return ensureStore().find((v) => v.molliePaymentId === paymentId);
-}
-
-export function activateVoucher(code: string) {
-  const items = ensureStore();
-  const voucher = items.find((v) => v.code === code);
-  if (!voucher) return undefined;
-  if (voucher.status === "unpaid") voucher.status = "active";
-  writeStore(items);
-  return voucher;
-}
-
-export function redeemVoucherAmount(code: string, amount: number) {
-  const items = ensureStore();
-  const voucher = items.find((v) => v.code.toUpperCase() === code.toUpperCase());
-  if (!voucher) return undefined;
-  voucher.balance = Math.max(0, voucher.balance - amount);
-  if (voucher.balance === 0) voucher.status = "redeemed";
-  writeStore(items);
-  return voucher;
-}
-
-export function validateVoucher(
+export async function validateVoucher(
   code: string
-): { valid: boolean; voucher?: Voucher; error?: string } {
-  const voucher = getVoucher(code);
+): Promise<{ valid: boolean; voucher?: Voucher; error?: string }> {
+  const voucher = await getVoucher(code);
   if (!voucher) return { valid: false, error: "Deze cadeaubon bestaat niet." };
   if (voucher.status === "unpaid") {
     return { valid: false, error: "Deze cadeaubon is nog niet betaald." };
@@ -130,13 +141,13 @@ export function validateVoucher(
   return { valid: true, voucher };
 }
 
-export function createManualVoucher(data: {
+export async function createManualVoucher(data: {
   amount: number;
   purchaserName: string;
   purchaserEmail: string;
   recipientName: string;
   message: string;
-}): Voucher {
-  const voucher = createVoucher(data);
-  return activateVoucher(voucher.code)!;
+}): Promise<Voucher> {
+  const voucher = await createVoucher(data);
+  return (await activateVoucher(voucher.code))!;
 }

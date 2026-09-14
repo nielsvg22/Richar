@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { sql, ensureSchema } from "./db";
 
 export type BlockedDate = {
   date: string;
@@ -7,35 +6,32 @@ export type BlockedDate = {
   createdAt: string;
 };
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const DATA_FILE = path.join(DATA_DIR, "blocked-dates.json");
+type BlockedDateRow = {
+  date: string;
+  reason: string;
+  created_at: Date;
+};
 
-function ensureStore(): BlockedDate[] {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, JSON.stringify([], null, 2));
-  const raw = fs.readFileSync(DATA_FILE, "utf-8");
-  try {
-    return JSON.parse(raw) as BlockedDate[];
-  } catch {
-    return [];
-  }
+function rowToBlockedDate(row: BlockedDateRow): BlockedDate {
+  return { date: row.date, reason: row.reason, createdAt: row.created_at.toISOString() };
 }
 
-function writeStore(items: BlockedDate[]) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(items, null, 2));
+export async function getBlockedDates(): Promise<BlockedDate[]> {
+  await ensureSchema();
+  const rows = await sql<BlockedDateRow[]>`SELECT * FROM blocked_dates ORDER BY date ASC`;
+  return rows.map(rowToBlockedDate);
 }
 
-export function getBlockedDates(): BlockedDate[] {
-  return ensureStore().sort((a, b) => (a.date < b.date ? -1 : 1));
+export async function isDateBlocked(date: string): Promise<boolean> {
+  await ensureSchema();
+  const rows = await sql`SELECT 1 FROM blocked_dates WHERE date = ${date}`;
+  return rows.length > 0;
 }
 
-export function isDateBlocked(date: string): boolean {
-  return ensureStore().some((b) => b.date === date);
-}
-
-export function getBlockedDatesInMonth(year: number, month: number): Set<string> {
+export async function getBlockedDatesInMonth(year: number, month: number): Promise<Set<string>> {
+  const all = await getBlockedDates();
   return new Set(
-    ensureStore()
+    all
       .filter((b) => {
         const d = new Date(b.date);
         return d.getFullYear() === year && d.getMonth() === month;
@@ -44,21 +40,19 @@ export function getBlockedDatesInMonth(year: number, month: number): Set<string>
   );
 }
 
-export function blockDate(date: string, reason: string): BlockedDate {
-  const items = ensureStore();
-  if (items.some((b) => b.date === date)) {
+export async function blockDate(date: string, reason: string): Promise<BlockedDate> {
+  await ensureSchema();
+  const existing = await sql`SELECT 1 FROM blocked_dates WHERE date = ${date}`;
+  if (existing.length > 0) {
     throw new Error("Deze dag is al geblokkeerd.");
   }
   const blocked: BlockedDate = { date, reason, createdAt: new Date().toISOString() };
-  items.push(blocked);
-  writeStore(items);
+  await sql`INSERT INTO blocked_dates (date, reason, created_at) VALUES (${date}, ${reason}, ${blocked.createdAt})`;
   return blocked;
 }
 
-export function unblockDate(date: string): boolean {
-  const items = ensureStore();
-  const next = items.filter((b) => b.date !== date);
-  if (next.length === items.length) return false;
-  writeStore(next);
-  return true;
+export async function unblockDate(date: string): Promise<boolean> {
+  await ensureSchema();
+  const result = await sql`DELETE FROM blocked_dates WHERE date = ${date}`;
+  return result.count > 0;
 }

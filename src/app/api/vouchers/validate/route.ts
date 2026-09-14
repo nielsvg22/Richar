@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ valid: false, error: "Vul een cadeaubon-code in." }, { status: 400 });
   }
 
-  const result = validateVoucher(code);
+  const result = await validateVoucher(code);
   if (!result.valid) {
     return NextResponse.json(result);
   }

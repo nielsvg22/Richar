@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { sql, ensureSchema } from "./db";
 
 export type Settings = {
   resendApiKey: string;
@@ -8,49 +7,56 @@ export type Settings = {
   mollieApiKey: string;
 };
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const DATA_FILE = path.join(DATA_DIR, "settings.json");
-
-const defaultSettings: Settings = {
-  resendApiKey: "",
-  emailFrom: "Rosa & Charlotte <onboarding@resend.dev>",
-  emailReplyTo: "hallo@rosaencharlotte.nl",
-  mollieApiKey: "",
+type SettingsRow = {
+  resend_api_key: string;
+  email_from: string;
+  email_reply_to: string;
+  mollie_api_key: string;
 };
 
-function ensureStore(): Settings {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-  if (!fs.existsSync(DATA_FILE)) {
-    const seeded: Settings = {
-      ...defaultSettings,
-      resendApiKey: process.env.RESEND_API_KEY || "",
-      emailFrom: process.env.EMAIL_FROM || defaultSettings.emailFrom,
-      emailReplyTo: process.env.EMAIL_REPLY_TO || defaultSettings.emailReplyTo,
-      mollieApiKey: process.env.MOLLIE_API_KEY || "",
-    };
-    fs.writeFileSync(DATA_FILE, JSON.stringify(seeded, null, 2));
-  }
-  const raw = fs.readFileSync(DATA_FILE, "utf-8");
-  try {
-    return { ...defaultSettings, ...JSON.parse(raw) };
-  } catch {
-    return defaultSettings;
-  }
+function rowToSettings(row: SettingsRow): Settings {
+  return {
+    resendApiKey: row.resend_api_key,
+    emailFrom: row.email_from,
+    emailReplyTo: row.email_reply_to,
+    mollieApiKey: row.mollie_api_key,
+  };
 }
 
-export function getSettings(): Settings {
-  return ensureStore();
+async function ensureSeeded(): Promise<Settings> {
+  await ensureSchema();
+  const rows = await sql<SettingsRow[]>`SELECT * FROM settings WHERE id = 1`;
+  if (rows[0]) return rowToSettings(rows[0]);
+
+  const seeded: Settings = {
+    resendApiKey: process.env.RESEND_API_KEY || "",
+    emailFrom: process.env.EMAIL_FROM || "Rosa & Charlotte <onboarding@resend.dev>",
+    emailReplyTo: process.env.EMAIL_REPLY_TO || "hallo@rosaencharlotte.nl",
+    mollieApiKey: process.env.MOLLIE_API_KEY || "",
+  };
+  await sql`
+    INSERT INTO settings (id, resend_api_key, email_from, email_reply_to, mollie_api_key)
+    VALUES (1, ${seeded.resendApiKey}, ${seeded.emailFrom}, ${seeded.emailReplyTo}, ${seeded.mollieApiKey})
+    ON CONFLICT (id) DO NOTHING
+  `;
+  return seeded;
 }
 
-export function updateSettings(data: Partial<Settings>): Settings {
-  const current = ensureStore();
-  const cleanData = Object.fromEntries(
-    Object.entries(data).filter(([, value]) => value !== undefined)
-  );
-  const next = { ...current, ...cleanData };
-  fs.writeFileSync(DATA_FILE, JSON.stringify(next, null, 2));
+export async function getSettings(): Promise<Settings> {
+  return ensureSeeded();
+}
+
+export async function updateSettings(data: Partial<Settings>): Promise<Settings> {
+  const current = await ensureSeeded();
+  const next = { ...current, ...Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined)) };
+  await sql`
+    UPDATE settings SET
+      resend_api_key = ${next.resendApiKey},
+      email_from = ${next.emailFrom},
+      email_reply_to = ${next.emailReplyTo},
+      mollie_api_key = ${next.mollieApiKey}
+    WHERE id = 1
+  `;
   return next;
 }
 

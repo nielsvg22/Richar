@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const contactRequest = createContactRequest({
+  const contactRequest = await createContactRequest({
     name,
     email,
     phone: phone ?? "",

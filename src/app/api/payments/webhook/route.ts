@@ -18,15 +18,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ received: true });
     }
 
-    const booking = getBookingByMolliePaymentId(paymentId);
+    const booking = await getBookingByMolliePaymentId(paymentId);
     if (booking && !booking.depositPaid) {
-      markDepositPaid(booking.id);
+      await markDepositPaid(booking.id);
       return NextResponse.json({ received: true });
     }
 
-    const voucher = getVoucherByMolliePaymentId(paymentId);
+    const voucher = await getVoucherByMolliePaymentId(paymentId);
     if (voucher && voucher.status === "unpaid") {
-      const activated = activateVoucher(voucher.code);
+      const activated = await activateVoucher(voucher.code);
       if (activated) await sendVoucherEmail(activated);
     }
 

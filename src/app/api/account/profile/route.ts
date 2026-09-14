@@ -11,6 +11,6 @@ export async function PATCH(request: NextRequest) {
   const body = await request.json();
   const { phone } = body;
 
-  const updated = updateCustomerPhone(customer.id, typeof phone === "string" ? phone : "");
+  const updated = await updateCustomerPhone(customer.id, typeof phone === "string" ? phone : "");
   return NextResponse.json({ id: updated?.id, phone: updated?.phone ?? "" });
 }

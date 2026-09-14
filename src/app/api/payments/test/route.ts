@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createMolliePayment, isMollieConfigured } from "@/lib/mollie";
 
 export async function POST(request: NextRequest) {
-  if (!isMollieConfigured()) {
+  if (!(await isMollieConfigured())) {
     return NextResponse.json({ error: "Geen Mollie API key geconfigureerd." }, { status: 400 });
   }
 

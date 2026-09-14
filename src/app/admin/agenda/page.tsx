@@ -43,8 +43,8 @@ export default async function AgendaPage({
     month = m - 1;
   }
 
-  const bookings = getBookings().filter((b) => b.status !== "Geannuleerd");
-  const blockedDates = getBlockedDates();
+  const bookings = (await getBookings()).filter((b) => b.status !== "Geannuleerd");
+  const blockedDates = await getBlockedDates();
 
   const prevDate = new Date(year, month - 1, 1);
   const nextDate = new Date(year, month + 1, 1);

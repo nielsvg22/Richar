@@ -14,8 +14,8 @@ const SOURCE_LABELS: Record<string, string> = {
   account: "Klantportaal",
 };
 
-export default function BerichtenPage() {
-  const requests = getContactRequests();
+export default async function BerichtenPage() {
+  const requests = await getContactRequests();
   const unviewedCount = requests.filter((r) => !r.viewedAt).length;
 
   return (

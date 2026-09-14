@@ -2,9 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { getSiteImageSlot, siteImageUrl } from "@/lib/siteImages";
 
-export default function Hero() {
+export default async function Hero() {
   const heroSlot = getSiteImageSlot("hero");
-  const heroImageUrl = heroSlot ? siteImageUrl(heroSlot) : null;
+  const heroImageUrl = heroSlot ? await siteImageUrl(heroSlot) : null;
 
   return (
     <section className="relative overflow-hidden">

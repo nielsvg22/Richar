@@ -4,9 +4,9 @@ import { countUnviewedContactRequests } from "@/lib/contactRequests";
 
 export const dynamic = "force-dynamic";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const unviewedBookings = countUnviewedBookings();
-  const unviewedMessages = countUnviewedContactRequests();
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const unviewedBookings = await countUnviewedBookings();
+  const unviewedMessages = await countUnviewedContactRequests();
 
   return (
     <div className="flex min-h-screen flex-col bg-cream-soft md:flex-row">

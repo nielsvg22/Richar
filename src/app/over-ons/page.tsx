@@ -30,11 +30,11 @@ const values = [
   },
 ];
 
-export default function OverOnsPage() {
+export default async function OverOnsPage() {
   const jungleSlot = getSiteImageSlot("team-jungle-party");
   const officeSlot = getSiteImageSlot("team-office");
-  const jungleUrl = (jungleSlot && siteImageUrl(jungleSlot)) || "/images/team-jungle-party.jpg";
-  const officeUrl = (officeSlot && siteImageUrl(officeSlot)) || "/images/team-office.jpg";
+  const jungleUrl = (jungleSlot && (await siteImageUrl(jungleSlot))) || "/images/team-jungle-party.jpg";
+  const officeUrl = (officeSlot && (await siteImageUrl(officeSlot))) || "/images/team-office.jpg";
 
   return (
     <>

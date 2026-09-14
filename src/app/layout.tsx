@@ -48,9 +48,9 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
   const logoSlot = getSiteImageSlot("logo");
-  const logoUrl = (logoSlot && siteImageUrl(logoSlot)) || "/images/logo.png";
+  const logoUrl = (logoSlot && (await siteImageUrl(logoSlot))) || "/images/logo.png";
 
   return (
     <html

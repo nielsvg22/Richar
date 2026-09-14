@@ -1,6 +1,5 @@
-import fs from "fs";
-import path from "path";
 import crypto from "crypto";
+import { sql, ensureSchema } from "./db";
 
 export type Customer = {
   id: string;
@@ -12,53 +11,58 @@ export type Customer = {
   createdAt: string;
 };
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const DATA_FILE = path.join(DATA_DIR, "customers.json");
+type CustomerRow = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  password_hash: string;
+  password_salt: string;
+  created_at: Date;
+};
 
-function ensureStore(): Customer[] {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, JSON.stringify([], null, 2));
-  const raw = fs.readFileSync(DATA_FILE, "utf-8");
-  try {
-    return JSON.parse(raw) as Customer[];
-  } catch {
-    return [];
-  }
-}
-
-function writeStore(items: Customer[]) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(items, null, 2));
+function rowToCustomer(row: CustomerRow): Customer {
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    phone: row.phone,
+    passwordHash: row.password_hash,
+    passwordSalt: row.password_salt,
+    createdAt: row.created_at.toISOString(),
+  };
 }
 
 function hashPassword(password: string, salt: string): string {
   return crypto.scryptSync(password, salt, 64).toString("hex");
 }
 
-export function getCustomerByEmail(email: string): Customer | undefined {
-  return ensureStore().find((c) => c.email.toLowerCase() === email.toLowerCase());
+export async function getCustomerByEmail(email: string): Promise<Customer | undefined> {
+  await ensureSchema();
+  const rows = await sql<CustomerRow[]>`SELECT * FROM customers WHERE lower(email) = lower(${email})`;
+  return rows[0] ? rowToCustomer(rows[0]) : undefined;
 }
 
-export function getCustomerById(id: string): Customer | undefined {
-  return ensureStore().find((c) => c.id === id);
+export async function getCustomerById(id: string): Promise<Customer | undefined> {
+  await ensureSchema();
+  const rows = await sql<CustomerRow[]>`SELECT * FROM customers WHERE id = ${id}`;
+  return rows[0] ? rowToCustomer(rows[0]) : undefined;
 }
 
-export function updateCustomerPhone(id: string, phone: string): Customer | undefined {
-  const items = ensureStore();
-  const customer = items.find((c) => c.id === id);
-  if (!customer) return undefined;
-  customer.phone = phone;
-  writeStore(items);
-  return customer;
+export async function updateCustomerPhone(id: string, phone: string): Promise<Customer | undefined> {
+  await ensureSchema();
+  await sql`UPDATE customers SET phone = ${phone} WHERE id = ${id}`;
+  return getCustomerById(id);
 }
 
-export function createCustomer(data: {
+export async function createCustomer(data: {
   name: string;
   email: string;
   password: string;
   phone?: string;
-}): Customer {
-  const items = ensureStore();
-  if (items.some((c) => c.email.toLowerCase() === data.email.toLowerCase())) {
+}): Promise<Customer> {
+  await ensureSchema();
+  if (await getCustomerByEmail(data.email)) {
     throw new Error("Er bestaat al een account met dit e-mailadres.");
   }
   const salt = crypto.randomBytes(16).toString("hex");
@@ -71,8 +75,10 @@ export function createCustomer(data: {
     passwordSalt: salt,
     createdAt: new Date().toISOString(),
   };
-  items.push(customer);
-  writeStore(items);
+  await sql`
+    INSERT INTO customers (id, name, email, phone, password_hash, password_salt, created_at)
+    VALUES (${customer.id}, ${customer.name}, ${customer.email}, ${customer.phone}, ${customer.passwordHash}, ${customer.passwordSalt}, ${customer.createdAt})
+  `;
   return customer;
 }
 
@@ -81,13 +87,10 @@ export function verifyPassword(customer: Customer, password: string): boolean {
   return crypto.timingSafeEqual(Buffer.from(hash), Buffer.from(customer.passwordHash));
 }
 
-export function updateCustomerPassword(id: string, newPassword: string): Customer | undefined {
-  const items = ensureStore();
-  const customer = items.find((c) => c.id === id);
-  if (!customer) return undefined;
+export async function updateCustomerPassword(id: string, newPassword: string): Promise<Customer | undefined> {
+  await ensureSchema();
   const salt = crypto.randomBytes(16).toString("hex");
-  customer.passwordSalt = salt;
-  customer.passwordHash = hashPassword(newPassword, salt);
-  writeStore(items);
-  return customer;
+  const passwordHash = hashPassword(newPassword, salt);
+  await sql`UPDATE customers SET password_hash = ${passwordHash}, password_salt = ${salt} WHERE id = ${id}`;
+  return getCustomerById(id);
 }

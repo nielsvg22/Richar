@@ -2,12 +2,13 @@ import { getSettings } from "./settings";
 
 const MOLLIE_API = "https://api.mollie.com/v2";
 
-function getApiKey() {
-  return getSettings().mollieApiKey || process.env.MOLLIE_API_KEY || "";
+async function getApiKey() {
+  const settings = await getSettings();
+  return settings.mollieApiKey || process.env.MOLLIE_API_KEY || "";
 }
 
-export function isMollieConfigured() {
-  return Boolean(getApiKey());
+export async function isMollieConfigured() {
+  return Boolean(await getApiKey());
 }
 
 const UNREACHABLE_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0", "::1"];
@@ -45,7 +46,7 @@ type MolliePayment = {
 };
 
 async function mollieFetch(path: string, options: RequestInit = {}) {
-  const apiKey = getApiKey();
+  const apiKey = await getApiKey();
   if (!apiKey) {
     throw new Error("Geen Mollie API key geconfigureerd. Stel deze in bij Admin → Instellingen.");
   }

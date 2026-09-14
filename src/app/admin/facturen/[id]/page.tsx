@@ -24,7 +24,7 @@ export default async function FactuurDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const invoice = getInvoiceForBooking(id);
+  const invoice = await getInvoiceForBooking(id);
   if (!invoice) notFound();
 
   const { booking, number, status } = invoice;

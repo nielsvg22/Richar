@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { sql, ensureSchema } from "./db";
 
 export type InventoryItem = {
   id: string;
@@ -10,72 +9,88 @@ export type InventoryItem = {
   createdAt: string;
 };
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const DATA_FILE = path.join(DATA_DIR, "inventory.json");
+type InventoryRow = {
+  id: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  low_stock_threshold: number;
+  created_at: Date;
+};
 
-const defaultItems: InventoryItem[] = [
-  { id: "1", name: "Ballonnenboog sets", quantity: 6, unit: "sets", lowStockThreshold: 3, createdAt: new Date().toISOString() },
-  { id: "2", name: "Goodiebag tassen", quantity: 40, unit: "stuks", lowStockThreshold: 15, createdAt: new Date().toISOString() },
-  { id: "3", name: "Unicornhoorns (knutselset)", quantity: 20, unit: "sets", lowStockThreshold: 10, createdAt: new Date().toISOString() },
-  { id: "4", name: "Glitter make-up sets", quantity: 8, unit: "sets", lowStockThreshold: 4, createdAt: new Date().toISOString() },
-  { id: "5", name: "Prinsessenkronen", quantity: 15, unit: "stuks", lowStockThreshold: 6, createdAt: new Date().toISOString() },
-  { id: "6", name: "Wetenschapsproefjes-kit", quantity: 3, unit: "kits", lowStockThreshold: 4, createdAt: new Date().toISOString() },
+function rowToItem(row: InventoryRow): InventoryItem {
+  return {
+    id: row.id,
+    name: row.name,
+    quantity: row.quantity,
+    unit: row.unit,
+    lowStockThreshold: row.low_stock_threshold,
+    createdAt: row.created_at.toISOString(),
+  };
+}
+
+const defaultItems = [
+  { name: "Ballonnenboog sets", quantity: 6, unit: "sets", lowStockThreshold: 3 },
+  { name: "Goodiebag tassen", quantity: 40, unit: "stuks", lowStockThreshold: 15 },
+  { name: "Unicornhoorns (knutselset)", quantity: 20, unit: "sets", lowStockThreshold: 10 },
+  { name: "Glitter make-up sets", quantity: 8, unit: "sets", lowStockThreshold: 4 },
+  { name: "Prinsessenkronen", quantity: 15, unit: "stuks", lowStockThreshold: 6 },
+  { name: "Wetenschapsproefjes-kit", quantity: 3, unit: "kits", lowStockThreshold: 4 },
 ];
 
-function ensureStore(): InventoryItem[] {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(defaultItems, null, 2));
+async function ensureSeeded() {
+  await ensureSchema();
+  const [{ count }] = await sql<{ count: string }[]>`SELECT COUNT(*)::text FROM inventory`;
+  if (Number(count) === 0) {
+    for (let i = 0; i < defaultItems.length; i++) {
+      const item = defaultItems[i];
+      await sql`
+        INSERT INTO inventory (id, name, quantity, unit, low_stock_threshold)
+        VALUES (${String(Date.now() + i)}, ${item.name}, ${item.quantity}, ${item.unit}, ${item.lowStockThreshold})
+      `;
+    }
   }
-  const raw = fs.readFileSync(DATA_FILE, "utf-8");
-  try {
-    return JSON.parse(raw) as InventoryItem[];
-  } catch {
-    return [];
-  }
 }
 
-function writeStore(items: InventoryItem[]) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(items, null, 2));
+export async function getInventory(): Promise<InventoryItem[]> {
+  await ensureSeeded();
+  const rows = await sql<InventoryRow[]>`SELECT * FROM inventory ORDER BY name ASC`;
+  return rows.map(rowToItem);
 }
 
-export function getInventory(): InventoryItem[] {
-  return ensureStore().sort((a, b) => a.name.localeCompare(b.name));
-}
-
-export function createInventoryItem(data: {
+export async function createInventoryItem(data: {
   name: string;
   quantity: number;
   unit: string;
   lowStockThreshold: number;
-}): InventoryItem {
-  const items = ensureStore();
-  const item: InventoryItem = {
-    id: `${Date.now()}`,
-    ...data,
-    createdAt: new Date().toISOString(),
-  };
-  items.push(item);
-  writeStore(items);
+}): Promise<InventoryItem> {
+  await ensureSeeded();
+  const item: InventoryItem = { id: `${Date.now()}`, ...data, createdAt: new Date().toISOString() };
+  await sql`
+    INSERT INTO inventory (id, name, quantity, unit, low_stock_threshold, created_at)
+    VALUES (${item.id}, ${item.name}, ${item.quantity}, ${item.unit}, ${item.lowStockThreshold}, ${item.createdAt})
+  `;
   return item;
 }
 
-export function updateInventoryItem(id: string, data: Partial<InventoryItem>): InventoryItem | undefined {
-  const items = ensureStore();
-  const item = items.find((i) => i.id === id);
-  if (!item) return undefined;
-  const cleanData = Object.fromEntries(
-    Object.entries(data).filter(([, v]) => v !== undefined)
-  );
-  Object.assign(item, cleanData);
-  writeStore(items);
-  return item;
+export async function updateInventoryItem(
+  id: string,
+  data: Partial<InventoryItem>
+): Promise<InventoryItem | undefined> {
+  await ensureSeeded();
+  const rows = await sql<InventoryRow[]>`SELECT * FROM inventory WHERE id = ${id}`;
+  if (!rows[0]) return undefined;
+  const existing = rowToItem(rows[0]);
+  const next = { ...existing, ...Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined)) };
+  await sql`
+    UPDATE inventory SET name = ${next.name}, quantity = ${next.quantity}, unit = ${next.unit}, low_stock_threshold = ${next.lowStockThreshold}
+    WHERE id = ${id}
+  `;
+  return next;
 }
 
-export function deleteInventoryItem(id: string): boolean {
-  const items = ensureStore();
-  const next = items.filter((i) => i.id !== id);
-  if (next.length === items.length) return false;
-  writeStore(next);
-  return true;
+export async function deleteInventoryItem(id: string): Promise<boolean> {
+  await ensureSeeded();
+  const result = await sql`DELETE FROM inventory WHERE id = ${id}`;
+  return result.count > 0;
 }

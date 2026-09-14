@@ -6,12 +6,12 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const { email, password } = body;
 
-  const customer = email ? getCustomerByEmail(email) : undefined;
+  const customer = email ? await getCustomerByEmail(email) : undefined;
   if (!customer || !verifyPassword(customer, password ?? "")) {
     return NextResponse.json({ error: "E-mailadres of wachtwoord is onjuist." }, { status: 401 });
   }
 
-  const token = createSessionToken(customer.id);
+  const token = await createSessionToken(customer.id);
   const res = NextResponse.json({ id: customer.id, name: customer.name, email: customer.email });
   res.cookies.set(SESSION_COOKIE, token, {
     httpOnly: true,

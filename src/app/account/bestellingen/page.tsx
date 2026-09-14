@@ -30,7 +30,7 @@ export default async function BestellingenPage({
   const { tab } = await searchParams;
   const activeTab = tab === "eerder" ? "eerder" : tab === "alle" ? "alle" : "aankomend";
 
-  const bookings = getBookingsForCustomer(customer.id, customer.email);
+  const bookings = await getBookingsForCustomer(customer.id, customer.email);
   const now = new Date();
   const upcoming = bookings
     .filter((b) => new Date(b.date) >= now && b.status !== "Geannuleerd")

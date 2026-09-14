@@ -2,11 +2,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { getSiteImageSlot, siteImageUrl } from "@/lib/siteImages";
 
-export default function AboutSection() {
+export default async function AboutSection() {
   const jungleSlot = getSiteImageSlot("team-jungle-party");
   const officeSlot = getSiteImageSlot("team-office");
-  const jungleUrl = (jungleSlot && siteImageUrl(jungleSlot)) || "/images/team-jungle-party.jpg";
-  const officeUrl = (officeSlot && siteImageUrl(officeSlot)) || "/images/team-office.jpg";
+  const jungleUrl = (jungleSlot && (await siteImageUrl(jungleSlot))) || "/images/team-jungle-party.jpg";
+  const officeUrl = (officeSlot && (await siteImageUrl(officeSlot))) || "/images/team-office.jpg";
 
   return (
     <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">

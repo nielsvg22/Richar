@@ -8,7 +8,7 @@ import { validateDiscount, incrementDiscountUsage } from "@/lib/discounts";
 import { validateVoucher, redeemVoucherAmount } from "@/lib/vouchers";
 
 export async function GET() {
-  return NextResponse.json(getBookings());
+  return NextResponse.json(await getBookings());
 }
 
 export async function POST(request: NextRequest) {
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     voucherCode,
   } = body;
 
-  const theme = getTheme(themeSlug);
+  const theme = await getTheme(themeSlug);
   const pkg = getPackage(packageId);
 
   if (!theme || !pkg || !date || !parentName || !email || !phone || !childName) {
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (!force) {
-    const availability = isBookable(date);
+    const availability = await isBookable(date);
     if (!availability.bookable) {
       return NextResponse.json({ error: availability.reason }, { status: 409 });
     }
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
   let discountAmount = 0;
   let appliedDiscountCode: string | null = null;
   if (discountCode) {
-    const result = validateDiscount(discountCode, subtotal);
+    const result = await validateDiscount(discountCode, subtotal);
     if (result.valid && result.amount) {
       discountAmount = result.amount;
       appliedDiscountCode = result.discount!.code;
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
   let voucherAmount = 0;
   let appliedVoucherCode: string | null = null;
   if (voucherCode) {
-    const result = validateVoucher(voucherCode);
+    const result = await validateVoucher(voucherCode);
     if (result.valid) {
       const remainingAfterDiscount = Math.max(0, subtotal - discountAmount);
       voucherAmount = Math.min(result.voucher!.balance, remainingAfterDiscount);
@@ -124,18 +124,18 @@ export async function POST(request: NextRequest) {
     viewedAt: null,
   };
 
-  saveBooking(booking);
+  await saveBooking(booking);
 
   if (appliedDiscountCode) {
-    incrementDiscountUsage(appliedDiscountCode);
+    await incrementDiscountUsage(appliedDiscountCode);
   }
   if (appliedVoucherCode && voucherAmount > 0) {
-    redeemVoucherAmount(appliedVoucherCode, voucherAmount);
+    await redeemVoucherAmount(appliedVoucherCode, voucherAmount);
   }
 
   const emailResult = await sendBookingConfirmation(booking, request.nextUrl.origin);
   if (emailResult.success) {
-    recordEmailSent(booking.id, "confirmation");
+    await recordEmailSent(booking.id, "confirmation");
     booking.emailsSent = ["confirmation"];
   }
   await sendInternalBookingNotification(booking, request.nextUrl.origin);

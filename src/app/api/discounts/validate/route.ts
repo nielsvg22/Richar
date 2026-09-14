@@ -9,6 +9,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ valid: false, error: "Vul een kortingscode in." }, { status: 400 });
   }
 
-  const result = validateDiscount(code, Number(subtotal) || 0);
+  const result = await validateDiscount(code, Number(subtotal) || 0);
   return NextResponse.json(result);
 }

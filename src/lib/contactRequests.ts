@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { sql, ensureSchema } from "./db";
 
 export type ContactRequest = {
   id: string;
@@ -12,60 +11,73 @@ export type ContactRequest = {
   viewedAt: string | null;
 };
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const DATA_FILE = path.join(DATA_DIR, "contact-requests.json");
+type ContactRequestRow = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+  source: string;
+  created_at: Date;
+  viewed_at: Date | null;
+};
 
-function ensureStore(): ContactRequest[] {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, JSON.stringify([], null, 2));
-  const raw = fs.readFileSync(DATA_FILE, "utf-8");
-  try {
-    return JSON.parse(raw) as ContactRequest[];
-  } catch {
-    return [];
-  }
+function rowToRequest(row: ContactRequestRow): ContactRequest {
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    phone: row.phone,
+    message: row.message,
+    source: row.source as ContactRequest["source"],
+    createdAt: row.created_at.toISOString(),
+    viewedAt: row.viewed_at ? row.viewed_at.toISOString() : null,
+  };
 }
 
-function writeStore(items: ContactRequest[]) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(items, null, 2));
+export async function getContactRequests(): Promise<ContactRequest[]> {
+  await ensureSchema();
+  const rows = await sql<ContactRequestRow[]>`SELECT * FROM contact_requests ORDER BY created_at DESC`;
+  return rows.map(rowToRequest);
 }
 
-export function getContactRequests(): ContactRequest[] {
-  return ensureStore().sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+export async function getContactRequest(id: string): Promise<ContactRequest | undefined> {
+  await ensureSchema();
+  const rows = await sql<ContactRequestRow[]>`SELECT * FROM contact_requests WHERE id = ${id}`;
+  return rows[0] ? rowToRequest(rows[0]) : undefined;
 }
 
-export function getContactRequest(id: string): ContactRequest | undefined {
-  return ensureStore().find((c) => c.id === id);
-}
-
-export function createContactRequest(data: {
+export async function createContactRequest(data: {
   name: string;
   email: string;
   phone: string;
   message: string;
   source: "contact" | "account";
-}): ContactRequest {
-  const items = ensureStore();
+}): Promise<ContactRequest> {
+  await ensureSchema();
   const request: ContactRequest = {
     id: `CR-${Date.now()}`,
     ...data,
     createdAt: new Date().toISOString(),
     viewedAt: null,
   };
-  items.push(request);
-  writeStore(items);
+  await sql`
+    INSERT INTO contact_requests (id, name, email, phone, message, source, created_at)
+    VALUES (${request.id}, ${request.name}, ${request.email}, ${request.phone}, ${request.message}, ${request.source}, ${request.createdAt})
+  `;
   return request;
 }
 
-export function markContactRequestViewed(id: string) {
-  const items = ensureStore();
-  const item = items.find((c) => c.id === id);
-  if (!item || item.viewedAt) return item;
-  item.viewedAt = new Date().toISOString();
-  writeStore(items);
-  return item;
+export async function markContactRequestViewed(id: string) {
+  await ensureSchema();
+  await sql`UPDATE contact_requests SET viewed_at = now() WHERE id = ${id} AND viewed_at IS NULL`;
+  return getContactRequest(id);
 }
 
-export function countUnviewedContactRequests(): number {
-  return ensureStore().filter((c) => !c.viewedAt).length;
+export async function countUnviewedContactRequests(): Promise<number> {
+  await ensureSchema();
+  const [{ count }] = await sql<{ count: string }[]>`
+    SELECT COUNT(*)::text FROM contact_requests WHERE viewed_at IS NULL
+  `;
+  return Number(count);
 }

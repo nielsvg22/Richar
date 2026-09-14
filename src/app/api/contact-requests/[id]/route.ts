@@ -6,7 +6,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const contactRequest = getContactRequest(id);
+  const contactRequest = await getContactRequest(id);
   if (!contactRequest) {
     return NextResponse.json({ error: "Niet gevonden." }, { status: 404 });
   }
@@ -18,7 +18,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const contactRequest = markContactRequestViewed(id);
+  const contactRequest = await markContactRequestViewed(id);
   if (!contactRequest) {
     return NextResponse.json({ error: "Niet gevonden." }, { status: 404 });
   }

@@ -11,8 +11,8 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default function BoekenPage() {
-  const themes = getThemes();
+export default async function BoekenPage() {
+  const themes = await getThemes();
 
   return (
     <section className="mx-auto max-w-6xl px-5 py-14 sm:px-8 sm:py-20">

@@ -13,6 +13,6 @@ export async function GET(request: NextRequest) {
     month = m - 1;
   }
 
-  const availability = getAvailabilityForMonth(year, month);
+  const availability = await getAvailabilityForMonth(year, month);
   return NextResponse.json({ maxPerDay: MAX_BOOKINGS_PER_DAY, days: availability });
 }

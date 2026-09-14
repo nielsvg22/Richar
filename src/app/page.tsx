@@ -13,8 +13,8 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-export default function Home() {
-  const themes = getThemes();
+export default async function Home() {
+  const themes = await getThemes();
   const homeThemes = [
     ...themes.filter((t) => t.featured),
     ...themes.filter((t) => !t.featured),

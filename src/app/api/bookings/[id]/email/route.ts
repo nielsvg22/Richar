@@ -20,7 +20,7 @@ export async function POST(
     return NextResponse.json({ error: "Ongeldig e-mailtype." }, { status: 400 });
   }
 
-  const booking = getBooking(id);
+  const booking = await getBooking(id);
   if (!booking) {
     return NextResponse.json({ error: "Boeking niet gevonden." }, { status: 404 });
   }
@@ -33,6 +33,6 @@ export async function POST(
     );
   }
 
-  recordEmailSent(id, type);
+  await recordEmailSent(id, type);
   return NextResponse.json({ success: true });
 }

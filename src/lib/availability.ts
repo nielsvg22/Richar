@@ -3,8 +3,8 @@ import { getBlockedDatesInMonth, isDateBlocked } from "./blockedDates";
 
 export const MAX_BOOKINGS_PER_DAY = 2;
 
-export function getAvailabilityForMonth(year: number, month: number) {
-  const bookings = getBookings().filter((b) => b.status !== "Geannuleerd");
+export async function getAvailabilityForMonth(year: number, month: number) {
+  const bookings = (await getBookings()).filter((b) => b.status !== "Geannuleerd");
   const counts = new Map<string, number>();
 
   for (const booking of bookings) {
@@ -14,7 +14,7 @@ export function getAvailabilityForMonth(year: number, month: number) {
     }
   }
 
-  const blocked = getBlockedDatesInMonth(year, month);
+  const blocked = await getBlockedDatesInMonth(year, month);
 
   const result: Record<string, { count: number; full: boolean; blocked: boolean }> = {};
   for (const [date, count] of counts) {
@@ -28,13 +28,12 @@ export function getAvailabilityForMonth(year: number, month: number) {
   return result;
 }
 
-export function isBookable(date: string): { bookable: boolean; reason?: string } {
-  if (isDateBlocked(date)) {
+export async function isBookable(date: string): Promise<{ bookable: boolean; reason?: string }> {
+  if (await isDateBlocked(date)) {
     return { bookable: false, reason: "Deze datum is niet beschikbaar." };
   }
-  const count = getBookings().filter(
-    (b) => b.date === date && b.status !== "Geannuleerd"
-  ).length;
+  const bookings = await getBookings();
+  const count = bookings.filter((b) => b.date === date && b.status !== "Geannuleerd").length;
   if (count >= MAX_BOOKINGS_PER_DAY) {
     return { bookable: false, reason: "Deze datum zit helaas al vol. Kies een andere datum." };
   }

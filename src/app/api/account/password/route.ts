@@ -29,6 +29,6 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "Huidig wachtwoord is onjuist." }, { status: 400 });
   }
 
-  updateCustomerPassword(customer.id, newPassword);
+  await updateCustomerPassword(customer.id, newPassword);
   return NextResponse.json({ success: true });
 }

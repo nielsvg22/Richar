@@ -7,7 +7,7 @@ export const contentType = ogContentType;
 
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const theme = getTheme(slug);
+  const theme = await getTheme(slug);
 
   return new ImageResponse(
     (

@@ -6,7 +6,7 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
-  const theme = getTheme(slug);
+  const theme = await getTheme(slug);
   if (!theme) {
     return NextResponse.json({ error: "Thema niet gevonden." }, { status: 404 });
   }
@@ -34,7 +34,7 @@ export async function PATCH(
     featured,
   } = body;
 
-  const updated = updateTheme(slug, {
+  const updated = await updateTheme(slug, {
     name,
     emoji,
     tagline,
@@ -60,7 +60,7 @@ export async function DELETE(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
-  const deleted = deleteTheme(slug);
+  const deleted = await deleteTheme(slug);
   if (!deleted) {
     return NextResponse.json({ error: "Thema niet gevonden." }, { status: 404 });
   }

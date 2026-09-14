@@ -19,9 +19,9 @@ export default async function BookingDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const existing = getBooking(id);
+  const existing = await getBooking(id);
   if (!existing) notFound();
-  const booking = markBookingViewed(id) ?? existing;
+  const booking = (await markBookingViewed(id)) ?? existing;
 
   return (
     <div>

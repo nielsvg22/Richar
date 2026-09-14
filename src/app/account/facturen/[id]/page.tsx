@@ -28,7 +28,7 @@ export default async function AccountFactuurPage({
   if (!customer) redirect("/account/inloggen");
 
   const { id } = await params;
-  const invoice = getInvoiceForBooking(id);
+  const invoice = await getInvoiceForBooking(id);
   const belongsToCustomer =
     invoice &&
     (invoice.booking.customerId === customer.id ||

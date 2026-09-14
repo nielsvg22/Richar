@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { sql, ensureSchema } from "./db";
 
 export type DiscountCode = {
   code: string;
@@ -13,98 +12,107 @@ export type DiscountCode = {
   createdAt: string;
 };
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const DATA_FILE = path.join(DATA_DIR, "discounts.json");
+type DiscountRow = {
+  code: string;
+  type: string;
+  value: number;
+  description: string;
+  active: boolean;
+  expires_at: Date | null;
+  usage_limit: number | null;
+  usage_count: number;
+  created_at: Date;
+};
 
-const defaultDiscounts: DiscountCode[] = [
-  {
-    code: "WELKOM10",
-    type: "percentage",
-    value: 10,
-    description: "10% korting voor nieuwe klanten",
-    active: true,
-    expiresAt: null,
-    usageLimit: null,
-    usageCount: 0,
-    createdAt: new Date().toISOString(),
-  },
-];
+function rowToDiscount(row: DiscountRow): DiscountCode {
+  return {
+    code: row.code,
+    type: row.type as DiscountCode["type"],
+    value: row.value,
+    description: row.description,
+    active: row.active,
+    expiresAt: row.expires_at ? row.expires_at.toISOString() : null,
+    usageLimit: row.usage_limit,
+    usageCount: row.usage_count,
+    createdAt: row.created_at.toISOString(),
+  };
+}
 
-function ensureStore(): DiscountCode[] {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(defaultDiscounts, null, 2));
+async function ensureSeeded() {
+  await ensureSchema();
+  const [{ count }] = await sql<{ count: string }[]>`SELECT COUNT(*)::text FROM discounts`;
+  if (Number(count) === 0) {
+    await sql`
+      INSERT INTO discounts (code, type, value, description, active)
+      VALUES ('WELKOM10', 'percentage', 10, '10% korting voor nieuwe klanten', true)
+      ON CONFLICT (code) DO NOTHING
+    `;
   }
-  const raw = fs.readFileSync(DATA_FILE, "utf-8");
-  try {
-    return JSON.parse(raw) as DiscountCode[];
-  } catch {
-    return [];
-  }
 }
 
-function writeStore(items: DiscountCode[]) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(items, null, 2));
+export async function getDiscounts(): Promise<DiscountCode[]> {
+  await ensureSeeded();
+  const rows = await sql<DiscountRow[]>`SELECT * FROM discounts ORDER BY created_at DESC`;
+  return rows.map(rowToDiscount);
 }
 
-export function getDiscounts(): DiscountCode[] {
-  return ensureStore();
+export async function getDiscount(code: string): Promise<DiscountCode | undefined> {
+  await ensureSeeded();
+  const rows = await sql<DiscountRow[]>`SELECT * FROM discounts WHERE upper(code) = upper(${code})`;
+  return rows[0] ? rowToDiscount(rows[0]) : undefined;
 }
 
-export function getDiscount(code: string): DiscountCode | undefined {
-  return ensureStore().find((d) => d.code.toUpperCase() === code.toUpperCase());
-}
-
-export function createDiscount(data: Omit<DiscountCode, "usageCount" | "createdAt">) {
-  const items = ensureStore();
+export async function createDiscount(data: Omit<DiscountCode, "usageCount" | "createdAt">) {
+  await ensureSeeded();
   const code = data.code.toUpperCase().trim();
-  if (items.some((d) => d.code === code)) {
+  if (await getDiscount(code)) {
     throw new Error("Deze kortingscode bestaat al.");
   }
-  const discount: DiscountCode = {
-    ...data,
-    code,
-    usageCount: 0,
-    createdAt: new Date().toISOString(),
-  };
-  items.push(discount);
-  writeStore(items);
+  const discount: DiscountCode = { ...data, code, usageCount: 0, createdAt: new Date().toISOString() };
+  await sql`
+    INSERT INTO discounts (code, type, value, description, active, expires_at, usage_limit, usage_count, created_at)
+    VALUES (${discount.code}, ${discount.type}, ${discount.value}, ${discount.description}, ${discount.active}, ${discount.expiresAt}, ${discount.usageLimit}, 0, ${discount.createdAt})
+  `;
   return discount;
 }
 
-export function updateDiscount(code: string, data: Partial<DiscountCode>) {
-  const items = ensureStore();
-  const index = items.findIndex((d) => d.code.toUpperCase() === code.toUpperCase());
-  if (index === -1) return undefined;
+export async function updateDiscount(code: string, data: Partial<DiscountCode>) {
+  await ensureSeeded();
+  const existing = await getDiscount(code);
+  if (!existing) return undefined;
   const cleanData = Object.fromEntries(
-    Object.entries(data).filter(([, v]) => v !== undefined)
+    Object.entries(data).filter(([, value]) => value !== undefined)
   );
-  items[index] = { ...items[index], ...cleanData, code: items[index].code };
-  writeStore(items);
-  return items[index];
+  const next = { ...existing, ...cleanData, code: existing.code };
+  await sql`
+    UPDATE discounts SET
+      type = ${next.type},
+      value = ${next.value},
+      description = ${next.description},
+      active = ${next.active},
+      expires_at = ${next.expiresAt},
+      usage_limit = ${next.usageLimit}
+    WHERE upper(code) = upper(${code})
+  `;
+  return next;
 }
 
-export function deleteDiscount(code: string) {
-  const items = ensureStore();
-  const next = items.filter((d) => d.code.toUpperCase() !== code.toUpperCase());
-  if (next.length === items.length) return false;
-  writeStore(next);
-  return true;
+export async function deleteDiscount(code: string) {
+  await ensureSeeded();
+  const result = await sql`DELETE FROM discounts WHERE upper(code) = upper(${code})`;
+  return result.count > 0;
 }
 
-export function incrementDiscountUsage(code: string) {
-  const items = ensureStore();
-  const item = items.find((d) => d.code.toUpperCase() === code.toUpperCase());
-  if (!item) return;
-  item.usageCount += 1;
-  writeStore(items);
+export async function incrementDiscountUsage(code: string) {
+  await ensureSeeded();
+  await sql`UPDATE discounts SET usage_count = usage_count + 1 WHERE upper(code) = upper(${code})`;
 }
 
-export function validateDiscount(
+export async function validateDiscount(
   code: string,
   subtotal: number
-): { valid: boolean; discount?: DiscountCode; amount?: number; error?: string } {
-  const discount = getDiscount(code);
+): Promise<{ valid: boolean; discount?: DiscountCode; amount?: number; error?: string }> {
+  const discount = await getDiscount(code);
   if (!discount) return { valid: false, error: "Deze kortingscode bestaat niet." };
   if (!discount.active) return { valid: false, error: "Deze kortingscode is niet meer actief." };
   if (discount.expiresAt && new Date(discount.expiresAt) < new Date()) {

@@ -6,12 +6,12 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const { bookingId } = body;
 
-  const booking = getBooking(bookingId);
+  const booking = await getBooking(bookingId);
   if (!booking) {
     return NextResponse.json({ error: "Boeking niet gevonden." }, { status: 404 });
   }
 
-  if (!isMollieConfigured()) {
+  if (!(await isMollieConfigured())) {
     return NextResponse.json(
       { error: "Online betalen is nog niet ingesteld. Neem contact met ons op om te betalen." },
       { status: 503 }
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       metadata: { bookingId: booking.id },
     });
 
-    setMolliePaymentId(booking.id, payment.id);
+    await setMolliePaymentId(booking.id, payment.id);
 
     return NextResponse.json({ checkoutUrl: payment._links.checkout?.href });
   } catch (err) {

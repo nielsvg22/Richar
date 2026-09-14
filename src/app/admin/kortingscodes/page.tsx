@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default function KortingscodesPage() {
-  const discounts = getDiscounts();
+export default async function KortingscodesPage() {
+  const discounts = await getDiscounts();
 
   return (
     <div>

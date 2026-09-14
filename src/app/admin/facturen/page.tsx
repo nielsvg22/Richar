@@ -21,8 +21,8 @@ const STATUS_LABELS: Record<InvoiceStatus, string> = {
   betaald: "Betaald",
 };
 
-export default function FacturenPage() {
-  const invoices = getInvoices();
+export default async function FacturenPage() {
+  const invoices = await getInvoices();
   const totalOpen = invoices
     .filter((i) => i.status !== "betaald")
     .reduce((sum, i) => sum + (i.booking.totalPrice - (i.booking.depositPaid ? i.booking.depositAmount : 0)), 0);

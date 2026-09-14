@@ -6,7 +6,7 @@ export async function DELETE(
   { params }: { params: Promise<{ date: string }> }
 ) {
   const { date } = await params;
-  const removed = unblockDate(date);
+  const removed = await unblockDate(date);
   if (!removed) {
     return NextResponse.json({ error: "Datum niet gevonden." }, { status: 404 });
   }

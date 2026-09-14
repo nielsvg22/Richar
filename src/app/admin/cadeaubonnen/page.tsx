@@ -22,8 +22,8 @@ const STATUS_LABELS: Record<string, string> = {
   expired: "Verlopen",
 };
 
-export default function CadeaubonnenPage() {
-  const vouchers = getVouchers();
+export default async function CadeaubonnenPage() {
+  const vouchers = await getVouchers();
 
   return (
     <div>

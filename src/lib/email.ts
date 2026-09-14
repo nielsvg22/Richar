@@ -4,20 +4,20 @@ import type { Voucher } from "./vouchers";
 import { getExtra } from "./pricing";
 import { getSettings } from "./settings";
 
-function getClient() {
-  const settings = getSettings();
+async function getClient() {
+  const settings = await getSettings();
   const apiKey = settings.resendApiKey || process.env.RESEND_API_KEY;
   if (!apiKey) return null;
   return new Resend(apiKey);
 }
 
-function getFrom() {
-  const settings = getSettings();
+async function getFrom() {
+  const settings = await getSettings();
   return settings.emailFrom || process.env.EMAIL_FROM || "Rosa & Charlotte <onboarding@resend.dev>";
 }
 
-function getReplyTo() {
-  const settings = getSettings();
+async function getReplyTo() {
+  const settings = await getSettings();
   return settings.emailReplyTo || process.env.EMAIL_REPLY_TO || "hallo@rosaencharlotte.nl";
 }
 
@@ -53,7 +53,7 @@ function formatDate(date: string) {
 }
 
 async function send(to: string, subject: string, html: string) {
-  const client = getClient();
+  const client = await getClient();
   if (!client) {
     console.warn("[email] Geen Resend API key geconfigureerd, e-mail niet verstuurd:", subject, "→", to);
     return {
@@ -63,11 +63,11 @@ async function send(to: string, subject: string, html: string) {
   }
   try {
     const { error: sendError } = await client.emails.send({
-      from: getFrom(),
+      from: await getFrom(),
       to,
       subject,
       html,
-      replyTo: getReplyTo(),
+      replyTo: await getReplyTo(),
     });
     if (sendError) {
       console.error("[email] Resend gaf een fout terug:", sendError);
@@ -112,7 +112,7 @@ export async function sendVoucherEmail(voucher: Voucher) {
 }
 
 export async function sendInternalBookingNotification(booking: Booking, origin?: string) {
-  const settings = getSettings();
+  const settings = await getSettings();
   const to = settings.emailReplyTo || "hallo@rosaencharlotte.nl";
 
   const html = wrapper(
@@ -233,7 +233,7 @@ export async function sendInternalContactNotification(request: {
   phone: string;
   message: string;
 }, origin?: string) {
-  const settings = getSettings();
+  const settings = await getSettings();
   const to = settings.emailReplyTo || "hallo@rosaencharlotte.nl";
 
   const html = wrapper(

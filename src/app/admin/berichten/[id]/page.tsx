@@ -21,10 +21,10 @@ export default async function BerichtDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const existing = getContactRequest(id);
+  const existing = await getContactRequest(id);
   if (!existing) notFound();
 
-  const request = markContactRequestViewed(id) ?? existing;
+  const request = (await markContactRequestViewed(id)) ?? existing;
 
   return (
     <div>

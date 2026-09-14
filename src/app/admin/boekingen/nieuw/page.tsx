@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default function NieuweBoekingPage() {
-  const themes = getThemes();
+export default async function NieuweBoekingPage() {
+  const themes = await getThemes();
 
   return (
     <div>

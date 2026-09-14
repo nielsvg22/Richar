@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getBlockedDates, blockDate } from "@/lib/blockedDates";
 
 export async function GET() {
-  return NextResponse.json(getBlockedDates());
+  return NextResponse.json(await getBlockedDates());
 }
 
 export async function POST(request: NextRequest) {
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const blocked = blockDate(date, reason || "");
+    const blocked = await blockDate(date, reason || "");
     return NextResponse.json(blocked, { status: 201 });
   } catch (err) {
     return NextResponse.json(

@@ -15,8 +15,8 @@ const MONTH_LABELS = [
   "dec",
 ];
 
-export function getMonthlyRevenue(months = 6) {
-  const bookings = getBookings().filter((b) => b.status !== "Geannuleerd");
+export async function getMonthlyRevenue(months = 6) {
+  const bookings = (await getBookings()).filter((b) => b.status !== "Geannuleerd");
   const now = new Date();
 
   const result: { key: string; label: string; revenue: number }[] = [];
@@ -37,8 +37,8 @@ export function getMonthlyRevenue(months = 6) {
   return result;
 }
 
-export function getRevenueByTheme(limit = 6) {
-  const bookings = getBookings().filter((b) => b.status !== "Geannuleerd");
+export async function getRevenueByTheme(limit = 6) {
+  const bookings = (await getBookings()).filter((b) => b.status !== "Geannuleerd");
   const byTheme = new Map<string, number>();
 
   for (const booking of bookings) {

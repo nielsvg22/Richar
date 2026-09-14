@@ -3,8 +3,8 @@ import { getThemes } from "@/lib/themes";
 import { blogPosts } from "@/lib/blog";
 import { locations } from "@/lib/locations";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const themes = getThemes();
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const themes = await getThemes();
   const base = "https://www.rosaencharlotte.nl";
   const staticRoutes = [
     "",

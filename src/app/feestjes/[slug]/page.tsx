@@ -15,7 +15,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const theme = getTheme(slug);
+  const theme = await getTheme(slug);
   if (!theme) return {};
 
   return {
@@ -34,10 +34,10 @@ export default async function ThemeDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const theme = getTheme(slug);
+  const theme = await getTheme(slug);
   if (!theme) notFound();
 
-  const otherThemes = getThemes().filter((t) => t.slug !== theme.slug).slice(0, 4);
+  const otherThemes = (await getThemes()).filter((t) => t.slug !== theme.slug).slice(0, 4);
 
   return (
     <>

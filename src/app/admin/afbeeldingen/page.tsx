@@ -9,7 +9,11 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default function AfbeeldingenPage() {
+export default async function AfbeeldingenPage() {
+  const slotsWithUrls = await Promise.all(
+    SITE_IMAGE_SLOTS.map(async (slot) => ({ slot, url: await siteImageUrl(slot) }))
+  );
+
   return (
     <div>
       <h1 className="font-heading text-3xl font-extrabold">Afbeeldingen</h1>
@@ -18,8 +22,8 @@ export default function AfbeeldingenPage() {
       </p>
 
       <div className="mt-8 grid gap-5 sm:grid-cols-2">
-        {SITE_IMAGE_SLOTS.map((slot) => (
-          <ImageSlotUploader key={slot.id} slot={slot} currentUrl={siteImageUrl(slot)} />
+        {slotsWithUrls.map(({ slot, url }) => (
+          <ImageSlotUploader key={slot.id} slot={slot} currentUrl={url} />
         ))}
       </div>
     </div>

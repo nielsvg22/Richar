@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  saveSiteImage(slot, buffer);
+  await saveSiteImage(slot, buffer, file.type);
 
   return NextResponse.json({ success: true });
 }

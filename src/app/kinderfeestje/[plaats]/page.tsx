@@ -36,7 +36,7 @@ export default async function KinderfeestjePlaatsPage({
   const location = getLocation(plaats);
   if (!location) notFound();
 
-  const themes = getThemes().slice(0, 8);
+  const themes = (await getThemes()).slice(0, 8);
 
   return (
     <>

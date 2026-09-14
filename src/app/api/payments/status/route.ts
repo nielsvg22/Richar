@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "bookingId ontbreekt." }, { status: 400 });
   }
 
-  const booking = getBooking(bookingId);
+  const booking = await getBooking(bookingId);
   if (!booking) {
     return NextResponse.json({ error: "Boeking niet gevonden." }, { status: 404 });
   }
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
   try {
     const payment = await getMolliePayment(booking.molliePaymentId);
     if (payment.status === "paid") {
-      markDepositPaid(booking.id);
+      await markDepositPaid(booking.id);
       return NextResponse.json({ depositPaid: true, status: "paid" });
     }
     return NextResponse.json({ depositPaid: false, status: payment.status });

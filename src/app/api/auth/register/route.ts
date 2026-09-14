@@ -16,17 +16,17 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   }
-  if (getCustomerByEmail(email)) {
+  if (await getCustomerByEmail(email)) {
     return NextResponse.json(
       { error: "Er bestaat al een account met dit e-mailadres. Log in plaats daarvan in." },
       { status: 409 }
     );
   }
 
-  const customer = createCustomer({ name, email, password });
-  linkBookingsToCustomer(customer.email, customer.id);
+  const customer = await createCustomer({ name, email, password });
+  await linkBookingsToCustomer(customer.email, customer.id);
 
-  const token = createSessionToken(customer.id);
+  const token = await createSessionToken(customer.id);
   const res = NextResponse.json({ id: customer.id, name: customer.name, email: customer.email });
   res.cookies.set(SESSION_COOKIE, token, {
     httpOnly: true,

@@ -1,39 +1,28 @@
-import fs from "fs";
-import path from "path";
-import { getBookings, getBooking, type Booking } from "./bookings";
+import { sql, ensureSchema } from "./db";
+import { getBooking, getBookings, type Booking } from "./bookings";
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const DATA_FILE = path.join(DATA_DIR, "invoice-numbers.json");
-
-type NumberMap = Record<string, string>;
-
-function ensureStore(): NumberMap {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, JSON.stringify({}, null, 2));
-  const raw = fs.readFileSync(DATA_FILE, "utf-8");
-  try {
-    return JSON.parse(raw) as NumberMap;
-  } catch {
-    return {};
-  }
-}
-
-function writeStore(map: NumberMap) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(map, null, 2));
-}
-
-function getOrCreateInvoiceNumber(booking: Booking): string {
-  const map = ensureStore();
-  if (map[booking.id]) return map[booking.id];
+async function getOrCreateInvoiceNumber(booking: Booking): Promise<string> {
+  await ensureSchema();
+  const existing = await sql<{ number: string }[]>`
+    SELECT number FROM invoice_numbers WHERE booking_id = ${booking.id}
+  `;
+  if (existing[0]) return existing[0].number;
 
   const year = new Date(booking.createdAt).getFullYear();
-  const existingForYear = Object.values(map).filter((n) => n.startsWith(`${year}-`));
-  const nextSeq = existingForYear.length + 1;
+  const [{ count }] = await sql<{ count: string }[]>`
+    SELECT COUNT(*)::text FROM invoice_numbers WHERE number LIKE ${year + "-%"}
+  `;
+  const nextSeq = Number(count) + 1;
   const number = `${year}-${String(nextSeq).padStart(4, "0")}`;
 
-  map[booking.id] = number;
-  writeStore(map);
-  return number;
+  await sql`
+    INSERT INTO invoice_numbers (booking_id, number) VALUES (${booking.id}, ${number})
+    ON CONFLICT (booking_id) DO NOTHING
+  `;
+  const final = await sql<{ number: string }[]>`
+    SELECT number FROM invoice_numbers WHERE booking_id = ${booking.id}
+  `;
+  return final[0].number;
 }
 
 export type InvoiceStatus = "open" | "aanbetaald" | "betaald";
@@ -50,23 +39,27 @@ function getInvoiceStatus(booking: Booking): InvoiceStatus {
   return "open";
 }
 
-export function getInvoiceForBooking(bookingId: string): Invoice | undefined {
-  const booking = getBooking(bookingId);
+export async function getInvoiceForBooking(bookingId: string): Promise<Invoice | undefined> {
+  const booking = await getBooking(bookingId);
   if (!booking) return undefined;
   return {
-    number: getOrCreateInvoiceNumber(booking),
+    number: await getOrCreateInvoiceNumber(booking),
     booking,
     status: getInvoiceStatus(booking),
   };
 }
 
-export function getInvoices(): Invoice[] {
-  return getBookings()
-    .filter((b) => b.status !== "Geannuleerd")
-    .map((booking) => ({
-      number: getOrCreateInvoiceNumber(booking),
+export async function getInvoices(): Promise<Invoice[]> {
+  const bookings = (await getBookings()).filter((b) => b.status !== "Geannuleerd");
+  // Sequential on purpose: concurrent calls could compute the same next invoice
+  // number before either has inserted its row, causing a duplicate-key error.
+  const invoices: Invoice[] = [];
+  for (const booking of bookings) {
+    invoices.push({
+      number: await getOrCreateInvoiceNumber(booking),
       booking,
       status: getInvoiceStatus(booking),
-    }))
-    .sort((a, b) => (a.number < b.number ? 1 : -1));
+    });
+  }
+  return invoices.sort((a, b) => (a.number < b.number ? 1 : -1));
 }

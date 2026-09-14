@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDiscounts, createDiscount } from "@/lib/discounts";
 
 export async function GET() {
-  return NextResponse.json(getDiscounts());
+  return NextResponse.json(await getDiscounts());
 }
 
 export async function POST(request: NextRequest) {
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const discount = createDiscount({
+    const discount = await createDiscount({
       code,
       type,
       value: Number(value),

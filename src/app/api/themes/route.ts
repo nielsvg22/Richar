@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getThemes, createTheme, type Theme } from "@/lib/themes";
 
 export async function GET() {
-  return NextResponse.json(getThemes());
+  return NextResponse.json(await getThemes());
 }
 
 export async function POST(request: NextRequest) {
@@ -44,6 +44,6 @@ export async function POST(request: NextRequest) {
     featured: Boolean(featured),
   };
 
-  const created = createTheme(theme);
+  const created = await createTheme(theme);
   return NextResponse.json(created, { status: 201 });
 }

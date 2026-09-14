@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSettings, updateSettings, maskApiKey } from "@/lib/settings";
 
 export async function GET() {
-  const settings = getSettings();
+  const settings = await getSettings();
   return NextResponse.json({
     ...settings,
     resendApiKey: maskApiKey(settings.resendApiKey),
@@ -23,7 +23,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "Vul een geldig reply-to e-mailadres in." }, { status: 400 });
   }
 
-  const updated = updateSettings({
+  const updated = await updateSettings({
     // Only overwrite a key when the admin actually typed a new one
     // (the GET endpoint never returns the real key, only a masked version).
     resendApiKey: resendApiKey ? resendApiKey.trim() : undefined,

@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default function InstellingenPage() {
-  const settings = getSettings();
+export default async function InstellingenPage() {
+  const settings = await getSettings();
 
   return (
     <div>

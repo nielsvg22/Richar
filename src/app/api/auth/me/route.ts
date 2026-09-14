@@ -4,8 +4,8 @@ import { getCustomerById } from "@/lib/customers";
 
 export async function GET(request: NextRequest) {
   const token = request.cookies.get(SESSION_COOKIE)?.value;
-  const customerId = verifySessionToken(token);
-  const customer = customerId ? getCustomerById(customerId) : undefined;
+  const customerId = await verifySessionToken(token);
+  const customer = customerId ? await getCustomerById(customerId) : undefined;
 
   if (!customer) {
     return NextResponse.json({ customer: null });
