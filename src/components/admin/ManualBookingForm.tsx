@@ -44,6 +44,7 @@ export default function ManualBookingForm({ themes }: { themes: Theme[] }) {
       childName: form.get("childName"),
       childAge: form.get("childAge"),
       notes: form.get("notes"),
+      force: true,
     };
 
     try {

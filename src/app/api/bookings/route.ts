@@ -3,6 +3,7 @@ import { getBookings, saveBooking, recordEmailSent, type Booking } from "@/lib/b
 import { getTheme } from "@/lib/themes";
 import { getPackage, getExtra, EXTRA_CHILD_PRICE } from "@/lib/pricing";
 import { sendBookingConfirmation } from "@/lib/email";
+import { MAX_BOOKINGS_PER_DAY } from "@/lib/availability";
 
 export async function GET() {
   return NextResponse.json(getBookings());
@@ -25,6 +26,7 @@ export async function POST(request: NextRequest) {
     childName,
     childAge,
     notes,
+    force,
   } = body;
 
   const theme = getTheme(themeSlug);
@@ -34,6 +36,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: "Niet alle verplichte gegevens zijn ingevuld." },
       { status: 400 }
+    );
+  }
+
+  const bookingsOnDate = getBookings().filter(
+    (b) => b.date === date && b.status !== "Geannuleerd"
+  );
+  if (!force && bookingsOnDate.length >= MAX_BOOKINGS_PER_DAY) {
+    return NextResponse.json(
+      { error: "Deze datum zit helaas al vol. Kies een andere datum." },
+      { status: 409 }
     );
   }
 

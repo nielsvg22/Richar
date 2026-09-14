@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ContactForm from "@/components/ContactForm";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -24,6 +25,7 @@ export default function ContactPage() {
           </p>
 
           <div className="mt-10 space-y-4">
+            <WhatsAppButton variant="inline" message="Hoi Rosa & Charlotte! Ik heb een vraag over een kinderfeestje." />
             <div className="flex items-center gap-4 rounded-2xl bg-white p-5">
               <span className="flex h-11 w-11 items-center justify-center rounded-full bg-mint-soft text-lg">
                 ✉️

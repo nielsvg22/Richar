@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import type { Theme } from "@/lib/themes";
 import { packages, extras, getPackage } from "@/lib/pricing";
 import BookingSummary from "./BookingSummary";
+import DatePicker from "./DatePicker";
 
 const STEPS = [
   { id: 1, label: "Thema" },
@@ -277,40 +278,33 @@ export default function BookingWizard({ themes }: { themes: Theme[] }) {
                 <h2 className="font-heading text-2xl font-bold">Datum & locatie</h2>
                 <p className="mt-1 text-sm text-ink-soft">Wanneer en waar vindt het feestje plaats?</p>
 
-                <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                  <div>
-                    <label htmlFor="date" className="text-sm font-semibold">
-                      Datum
-                    </label>
-                    <input
-                      id="date"
-                      type="date"
-                      value={form.date}
-                      min={new Date().toISOString().slice(0, 10)}
-                      onChange={(e) => update("date", e.target.value)}
-                      className="mt-2 w-full rounded-2xl border border-ink/10 bg-white px-4 py-3 text-sm focus:border-coral focus:outline-none"
-                    />
-                    {errors.date && <p className="mt-2 text-sm text-coral">{errors.date}</p>}
-                  </div>
-                  <div>
-                    <label htmlFor="time" className="text-sm font-semibold">
-                      Tijdslot
-                    </label>
-                    <select
-                      id="time"
-                      value={form.time}
-                      onChange={(e) => update("time", e.target.value)}
-                      className="mt-2 w-full rounded-2xl border border-ink/10 bg-white px-4 py-3 text-sm focus:border-coral focus:outline-none"
-                    >
-                      <option value="">Kies een tijdslot</option>
-                      {TIME_SLOTS.map((slot) => (
-                        <option key={slot} value={slot}>
-                          {slot}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.time && <p className="mt-2 text-sm text-coral">{errors.time}</p>}
-                  </div>
+                <div className="mt-6">
+                  <span className="text-sm font-semibold">Datum</span>
+                  <p className="mb-2 text-xs text-ink-soft">
+                    Volgeboekte dagen zijn doorgestreept, we kunnen daar helaas geen feestje meer plannen.
+                  </p>
+                  <DatePicker value={form.date} onChange={(date) => update("date", date)} />
+                  {errors.date && <p className="mt-2 text-sm text-coral">{errors.date}</p>}
+                </div>
+
+                <div className="mt-5">
+                  <label htmlFor="time" className="text-sm font-semibold">
+                    Tijdslot
+                  </label>
+                  <select
+                    id="time"
+                    value={form.time}
+                    onChange={(e) => update("time", e.target.value)}
+                    className="mt-2 w-full rounded-2xl border border-ink/10 bg-white px-4 py-3 text-sm focus:border-coral focus:outline-none"
+                  >
+                    <option value="">Kies een tijdslot</option>
+                    {TIME_SLOTS.map((slot) => (
+                      <option key={slot} value={slot}>
+                        {slot}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.time && <p className="mt-2 text-sm text-coral">{errors.time}</p>}
                 </div>
 
                 <div className="mt-6">
