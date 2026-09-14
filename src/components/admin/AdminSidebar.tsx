@@ -7,6 +7,7 @@ const links = [
   { href: "/admin", label: "Dashboard", emoji: "📊" },
   { href: "/admin/agenda", label: "Agenda", emoji: "🗓️" },
   { href: "/admin/feestjes", label: "Feestjes", emoji: "🎨" },
+  { href: "/admin/kortingscodes", label: "Kortingscodes", emoji: "🏷️" },
   { href: "/admin/instellingen", label: "Instellingen", emoji: "⚙️" },
   { href: "/", label: "Naar website", emoji: "🌐" },
 ];

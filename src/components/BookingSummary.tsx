@@ -2,16 +2,20 @@ import type { Theme } from "@/lib/themes";
 import type { Package } from "@/lib/pricing";
 import { calculatePrice, getExtra } from "@/lib/pricing";
 
+export type AppliedDiscount = { code: string; amount: number; description: string };
+
 export default function BookingSummary({
   theme,
   pkg,
   kids,
   extraIds,
+  discount,
 }: {
   theme?: Theme;
   pkg?: Package;
   kids: number;
   extraIds: string[];
+  discount?: AppliedDiscount | null;
 }) {
   if (!pkg) {
     return (
@@ -24,11 +28,16 @@ export default function BookingSummary({
     );
   }
 
-  const { extraKids, extraKidsPrice, extrasPrice, total } = calculatePrice(
+  const { extraKids, extraKidsPrice, extrasPrice, total: subtotal } = calculatePrice(
     pkg,
     kids,
     extraIds
   );
+
+  const discountAmount = discount ? Math.min(discount.amount, subtotal) : 0;
+  const total = Math.max(0, subtotal - discountAmount);
+  const deposit = Math.round(total * 0.5);
+  const remaining = total - deposit;
 
   return (
     <div className="rounded-[2rem] bg-white p-6 shadow-sm">
@@ -66,6 +75,12 @@ export default function BookingSummary({
             </div>
           );
         })}
+        {discount && discountAmount > 0 && (
+          <div className="flex items-center justify-between text-mint-soft">
+            <span className="text-ink-soft">Korting ({discount.code})</span>
+            <span className="font-semibold text-coral">−€{discountAmount}</span>
+          </div>
+        )}
       </div>
 
       <div className="mt-4 flex items-center justify-between border-t border-ink/10 pt-4">
@@ -74,6 +89,18 @@ export default function BookingSummary({
           €{total}
         </span>
       </div>
+
+      <div className="mt-4 space-y-1 rounded-2xl bg-cream-soft p-4 text-sm">
+        <div className="flex items-center justify-between">
+          <span>Aanbetaling nu (50%)</span>
+          <span className="font-semibold">€{deposit}</span>
+        </div>
+        <div className="flex items-center justify-between text-ink-soft">
+          <span>Restant, te betalen voor het feestje</span>
+          <span>€{remaining}</span>
+        </div>
+      </div>
+
       {extrasPrice + extraKidsPrice > 0 && (
         <p className="mt-3 text-xs text-ink-soft">
           Inclusief gekozen extra&apos;s. Eventuele reiskosten buiten ons

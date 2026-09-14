@@ -4,6 +4,7 @@ import { getTheme } from "@/lib/themes";
 import { getPackage, getExtra, EXTRA_CHILD_PRICE } from "@/lib/pricing";
 import { sendBookingConfirmation } from "@/lib/email";
 import { MAX_BOOKINGS_PER_DAY } from "@/lib/availability";
+import { validateDiscount, incrementDiscountUsage } from "@/lib/discounts";
 
 export async function GET() {
   return NextResponse.json(getBookings());
@@ -27,6 +28,7 @@ export async function POST(request: NextRequest) {
     childAge,
     notes,
     force,
+    discountCode,
   } = body;
 
   const theme = getTheme(themeSlug);
@@ -60,7 +62,20 @@ export async function POST(request: NextRequest) {
     return sum + (extra.unit === "per kind" ? extra.price * kidsCount : extra.price);
   }, 0);
 
-  const totalPrice = pkg.price + extraKidsPrice + extrasPrice;
+  const subtotal = pkg.price + extraKidsPrice + extrasPrice;
+
+  let discountAmount = 0;
+  let appliedDiscountCode: string | null = null;
+  if (discountCode) {
+    const result = validateDiscount(discountCode, subtotal);
+    if (result.valid && result.amount) {
+      discountAmount = result.amount;
+      appliedDiscountCode = result.discount!.code;
+    }
+  }
+
+  const totalPrice = Math.max(0, subtotal - discountAmount);
+  const depositAmount = Math.round(totalPrice * 0.5);
 
   const booking: Booking = {
     id: `RC-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -84,12 +99,24 @@ export async function POST(request: NextRequest) {
     basePrice: pkg.price,
     extraKidsPrice,
     extrasPrice,
+    discountCode: appliedDiscountCode,
+    discountAmount,
+    voucherCode: null,
+    voucherAmount: 0,
     totalPrice,
+    depositAmount,
+    depositPaid: false,
+    molliePaymentId: null,
+    customerId: null,
     status: "Nieuw",
     emailsSent: [],
   };
 
   saveBooking(booking);
+
+  if (appliedDiscountCode) {
+    incrementDiscountUsage(appliedDiscountCode);
+  }
 
   const emailResult = await sendBookingConfirmation(booking);
   if (emailResult.success) {

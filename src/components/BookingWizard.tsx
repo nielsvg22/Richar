@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Theme } from "@/lib/themes";
-import { packages, extras, getPackage } from "@/lib/pricing";
-import BookingSummary from "./BookingSummary";
+import { packages, extras, getPackage, calculatePrice } from "@/lib/pricing";
+import BookingSummary, { type AppliedDiscount } from "./BookingSummary";
 import DatePicker from "./DatePicker";
 
 const STEPS = [
@@ -75,6 +75,11 @@ export default function BookingWizard({ themes }: { themes: Theme[] }) {
   );
   const pkg = useMemo(() => getPackage(form.packageId), [form.packageId]);
 
+  const [discountInput, setDiscountInput] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
+  const [discountStatus, setDiscountStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [discountError, setDiscountError] = useState("");
+
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }));
     setErrors((e) => ({ ...e, [key]: "" }));
@@ -87,6 +92,43 @@ export default function BookingWizard({ themes }: { themes: Theme[] }) {
         ? f.extras.filter((e) => e !== id)
         : [...f.extras, id],
     }));
+  }
+
+  async function applyDiscountCode() {
+    if (!pkg || !discountInput.trim()) return;
+    setDiscountStatus("loading");
+    setDiscountError("");
+    const subtotal = calculatePrice(pkg, form.kids, form.extras).total;
+    try {
+      const res = await fetch("/api/discounts/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: discountInput.trim(), subtotal }),
+      });
+      const body = await res.json();
+      if (!body.valid) {
+        setDiscountStatus("error");
+        setDiscountError(body.error ?? "Deze kortingscode is ongeldig.");
+        setAppliedDiscount(null);
+        return;
+      }
+      setAppliedDiscount({
+        code: body.discount.code,
+        amount: body.amount,
+        description: body.discount.description,
+      });
+      setDiscountStatus("idle");
+    } catch {
+      setDiscountStatus("error");
+      setDiscountError("Er ging iets mis bij het controleren van de code.");
+    }
+  }
+
+  function removeDiscount() {
+    setAppliedDiscount(null);
+    setDiscountInput("");
+    setDiscountError("");
+    setDiscountStatus("idle");
   }
 
   function validateStep(current: number): boolean {
@@ -133,7 +175,7 @@ export default function BookingWizard({ themes }: { themes: Theme[] }) {
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, discountCode: appliedDiscount?.code }),
       });
       if (!res.ok) {
         const body = await res.json();
@@ -377,6 +419,47 @@ export default function BookingWizard({ themes }: { themes: Theme[] }) {
                     </label>
                   ))}
                 </div>
+
+                <div className="mt-6">
+                  <label htmlFor="discount" className="text-sm font-semibold">
+                    Kortingscode
+                  </label>
+                  {appliedDiscount ? (
+                    <div className="mt-2 flex items-center justify-between rounded-2xl border-2 border-mint bg-mint-soft/40 px-4 py-3 text-sm">
+                      <span>
+                        <span className="font-semibold">{appliedDiscount.code}</span> toegepast
+                        {appliedDiscount.description ? ` — ${appliedDiscount.description}` : ""}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={removeDiscount}
+                        className="text-xs font-semibold text-ink-soft hover:text-coral"
+                      >
+                        Verwijderen
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="mt-2 flex gap-2">
+                      <input
+                        id="discount"
+                        type="text"
+                        value={discountInput}
+                        onChange={(e) => setDiscountInput(e.target.value.toUpperCase())}
+                        placeholder="Bijv. WELKOM10"
+                        className="w-full rounded-2xl border border-ink/10 bg-white px-4 py-3 text-sm focus:border-coral focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={applyDiscountCode}
+                        disabled={discountStatus === "loading" || !discountInput.trim()}
+                        className="whitespace-nowrap rounded-2xl bg-ink px-5 py-3 text-sm font-semibold text-cream hover:bg-coral disabled:opacity-60"
+                      >
+                        {discountStatus === "loading" ? "..." : "Toepassen"}
+                      </button>
+                    </div>
+                  )}
+                  {discountError && <p className="mt-2 text-sm text-coral">{discountError}</p>}
+                </div>
               </div>
             )}
 
@@ -531,7 +614,13 @@ export default function BookingWizard({ themes }: { themes: Theme[] }) {
         </div>
 
         <div className="lg:sticky lg:top-24 lg:h-fit">
-          <BookingSummary theme={theme} pkg={pkg} kids={form.kids} extraIds={form.extras} />
+          <BookingSummary
+            theme={theme}
+            pkg={pkg}
+            kids={form.kids}
+            extraIds={form.extras}
+            discount={appliedDiscount}
+          />
         </div>
       </div>
     </div>

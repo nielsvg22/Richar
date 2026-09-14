@@ -31,7 +31,15 @@ export type Booking = {
   basePrice: number;
   extraKidsPrice: number;
   extrasPrice: number;
+  discountCode: string | null;
+  discountAmount: number;
+  voucherCode: string | null;
+  voucherAmount: number;
   totalPrice: number;
+  depositAmount: number;
+  depositPaid: boolean;
+  molliePaymentId: string | null;
+  customerId: string | null;
   status: BookingStatus;
   emailsSent: EmailType[];
 };
@@ -122,6 +130,14 @@ function seedBookings(): Booking[] {
       extrasPrice: 121,
       totalPrice: 320,
       status: "Bevestigd",
+      discountCode: null,
+      discountAmount: 0,
+      voucherCode: null,
+      voucherAmount: 0,
+      depositAmount: 0,
+      depositPaid: false,
+      molliePaymentId: null,
+      customerId: null,
       emailsSent: [],
     },
     {
@@ -148,6 +164,14 @@ function seedBookings(): Booking[] {
       extrasPrice: 0,
       totalPrice: 149,
       status: "Betaald",
+      discountCode: null,
+      discountAmount: 0,
+      voucherCode: null,
+      voucherAmount: 0,
+      depositAmount: 0,
+      depositPaid: false,
+      molliePaymentId: null,
+      customerId: null,
       emailsSent: [],
     },
     {
@@ -174,6 +198,14 @@ function seedBookings(): Booking[] {
       extrasPrice: 200,
       totalPrice: 499,
       status: "In behandeling",
+      discountCode: null,
+      discountAmount: 0,
+      voucherCode: null,
+      voucherAmount: 0,
+      depositAmount: 0,
+      depositPaid: false,
+      molliePaymentId: null,
+      customerId: null,
       emailsSent: [],
     },
     {
@@ -200,6 +232,14 @@ function seedBookings(): Booking[] {
       extrasPrice: 35,
       totalPrice: 252,
       status: "Nieuw",
+      discountCode: null,
+      discountAmount: 0,
+      voucherCode: null,
+      voucherAmount: 0,
+      depositAmount: 0,
+      depositPaid: false,
+      molliePaymentId: null,
+      customerId: null,
       emailsSent: [],
     },
     {
@@ -226,6 +266,14 @@ function seedBookings(): Booking[] {
       extrasPrice: 35,
       totalPrice: 184,
       status: "Afgerond",
+      discountCode: null,
+      discountAmount: 0,
+      voucherCode: null,
+      voucherAmount: 0,
+      depositAmount: 0,
+      depositPaid: false,
+      molliePaymentId: null,
+      customerId: null,
       emailsSent: [],
     },
   ];
