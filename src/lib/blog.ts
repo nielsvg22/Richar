@@ -258,6 +258,75 @@ export const blogPosts: BlogPost[] = [
       },
     ],
   },
+  {
+    slug: "workshop-of-kinderfeestje",
+    title: "Workshop of compleet kinderfeestje: wat past het beste bij jullie?",
+    description:
+      "Twijfel je tussen een losse workshop en een volledig verzorgd kinderfeestje? We zetten de verschillen op een rij, zodat je snel de juiste keuze maakt.",
+    emoji: "🎨",
+    publishedAt: "2026-08-11",
+    readingTime: "4 min",
+    intro:
+      "Naast complete kinderfeestjes bieden we bij Rosa & Charlotte ook losse workshops aan, zoals sieraden maken, schilderen of een beauty-middag. Maar wanneer kies je voor wat? In dit artikel leggen we het verschil uit.",
+    sections: [
+      {
+        heading: "Een workshop: kort, gericht en betaalbaar",
+        paragraphs: [
+          "Een workshop duurt meestal 90 tot 120 minuten en draait om één duidelijke activiteit, zoals sieraden rijgen of cupcakes versieren. Perfect als je op zoek bent naar een gerichte, betaalbare activiteit zonder de volledige aankleding van een feest.",
+          "Workshops zijn ook ideaal als aanvulling op een feestje dat je zelf organiseert: jullie verzorgen de taart en de cadeautjes, wij nemen de activiteit voor onze rekening.",
+        ],
+      },
+      {
+        heading: "Een compleet kinderfeestje: alles geregeld",
+        paragraphs: [
+          "Kies je voor een compleet feestje, dan verzorgen we alles: van decoratie en meerdere activiteiten tot begeleiding gedurende de hele middag. Dit is de beste keuze als je een onvergetelijke, volledig ontzorgde verjaardag wilt zonder zelf iets te hoeven regelen.",
+        ],
+      },
+      {
+        heading: "Twijfel je nog?",
+        paragraphs: [
+          "Vuistregel: kies een workshop als je vooral een leuke activiteit zoekt binnen een feestje dat je verder zelf organiseert. Kies een compleet feestje als je alles uit handen wilt geven. Nog steeds niet zeker? Doe de korte quiz op onze site en ontdek binnen een minuut wat het beste bij jullie past.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "seizoensfeestjes-hele-jaar-door",
+    title: "Feest het hele jaar door: onze seizoensthema's",
+    description:
+      "Van een griezelig Halloweenfeest tot een winters Kerstfeest: ontdek onze seizoensgebonden thema's voor een verjaardag met een extra feestelijk tintje.",
+    emoji: "🎃",
+    publishedAt: "2026-09-01",
+    readingTime: "3 min",
+    intro:
+      "Is je kind jarig rond een feestdag? Dan combineren we de verjaardag graag met de sfeer van het seizoen. Deze thema's zijn het hele jaar door te boeken.",
+    sections: [
+      {
+        heading: "Halloweenfeest",
+        paragraphs: [
+          "Griezelig gezellig, met pompoenen versieren, een spannende speurtocht en een zelfgemaakt heksenbrouwsel. Perfect voor de jarige die geboren is rond eind oktober.",
+        ],
+      },
+      {
+        heading: "Sinterklaas- en Kerstfeest",
+        paragraphs: [
+          "In december draait alles om gezelligheid: pepernoten bakken en surprises maken tijdens het Sinterklaasfeest, of kerstversiering knutselen en warme chocolademelk drinken tijdens het Kerstfeest.",
+        ],
+      },
+      {
+        heading: "Zomerkampfeest",
+        paragraphs: [
+          "Voor de zomerjarigen: een energiek buitenfeest vol waterspelletjes, een survivalparcours en een heuse schattenjacht in de tuin.",
+        ],
+      },
+      {
+        heading: "Ook te combineren met een gewoon thema",
+        paragraphs: [
+          "Twijfel je tussen een seizoensthema en een van onze andere feestjes? Bekijk het volledige overzicht op de feestjes-pagina of neem contact met ons op, we denken graag mee.",
+        ],
+      },
+    ],
+  },
 ];
 
 export function getBlogPost(slug: string) {
