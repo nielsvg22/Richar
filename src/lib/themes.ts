@@ -266,6 +266,113 @@ const defaultThemes: Omit<Theme, "checklist">[] = [
   },
 ];
 
+const seasonalThemes: Omit<Theme, "checklist">[] = [
+  {
+    slug: "halloweenfeest",
+    name: "Halloweenfeest",
+    emoji: "🎃",
+    tagline: "Griezelig gezellig, met pompoenen en spinnenwebben",
+    description:
+      "Een spannend Halloweenfeest vol pompoenen, griezelspelletjes en lekkere trucs.",
+    longDescription:
+      "De ruimte verandert in een spannend (maar niet té eng) Halloween-decor met pompoenen, spinnenwebben en sfeervolle verlichting. De kinderen pompoenen versieren, doen een griezelige speurtocht en trakteren zichzelf op een heksenbrouwsel-mocktail.",
+    ageRange: "5 - 12 jaar",
+    vanaf: 179,
+    gradient: "from-coral to-yellow-soft",
+    activities: [
+      "Pompoenen versieren",
+      "Griezelige speurtocht",
+      "Heksenbrouwsel maken (mocktail)",
+      "Verkleedmoment met fotoshoot",
+    ],
+    includes: [
+      "Halloween thema-decoratie",
+      "Pompoen-versiermateriaal",
+      "Griezelscript voor de speurtocht",
+      "Klein snoepzakje voor iedereen",
+    ],
+    featured: false,
+  },
+  {
+    slug: "sinterklaasfeest",
+    name: "Sinterklaasfeest",
+    emoji: "🎁",
+    tagline: "Pepernoten, surprises en spannende cadeautjes",
+    description:
+      "Een gezellig Sinterklaasfeest met pepernoten bakken, surprises maken en een verrassing.",
+    longDescription:
+      "Een knus en gezellig feest in Sinterklaassfeer. De kinderen bakken en versieren hun eigen pepernoten, knutselen een mini-surprise en sluiten af met een klein cadeautje. Perfect voor een gezellige decembermiddag.",
+    ageRange: "4 - 10 jaar",
+    vanaf: 179,
+    gradient: "from-coral-soft to-lavender-soft",
+    activities: [
+      "Pepernoten bakken en versieren",
+      "Mini-surprise knutselen",
+      "Sinterklaas-liedjesspel",
+      "Cadeautje uitpakken",
+    ],
+    includes: [
+      "Sinterklaas thema-decoratie",
+      "Bak- en knutselmaterialen",
+      "Begeleiding door Rosa of Charlotte",
+      "Klein cadeautje voor iedereen",
+    ],
+    featured: false,
+  },
+  {
+    slug: "kerstfeest",
+    name: "Kerstfeest",
+    emoji: "🎄",
+    tagline: "Twinkelende lichtjes en zelfgemaakte kerstversiering",
+    description:
+      "Een sfeervol kerstfeest met kerstboomversiering knutselen en warme chocolademelk.",
+    longDescription:
+      "Een winters, sfeervol feest vol twinkelende lichtjes. De kinderen knutselen hun eigen kerstversiering, versieren koekjes en genieten van warme chocolademelk met marshmallows. Een warm en gezellig feest voor de decembermaand.",
+    ageRange: "4 - 11 jaar",
+    vanaf: 189,
+    gradient: "from-mint to-coral-soft",
+    activities: [
+      "Kerstversiering knutselen",
+      "Kerstkoekjes versieren",
+      "Warme chocolademelk-moment",
+      "Kerstfotomoment",
+    ],
+    includes: [
+      "Kerst thema-decoratie",
+      "Knutsel- en versiermaterialen",
+      "Warme chocolademelk voor iedereen",
+      "Zelfgemaakte kerstversiering om mee te nemen",
+    ],
+    featured: false,
+  },
+  {
+    slug: "zomerkampfeest",
+    name: "Zomerkampfeest",
+    emoji: "🏕️",
+    tagline: "Buiten spelen, waterspelletjes en een zomers avontuur",
+    description:
+      "Een zonnig zomerkampfeest vol buitenspellen, waterspelletjes en avontuur in de tuin.",
+    longDescription:
+      "Een energiek buitenfeest vol zomerse spelletjes. Denk aan waterspelletjes, een survivalparcours en een echte schattenjacht in de tuin. Ideaal voor warme dagen en kinderen die graag naar buiten willen.",
+    ageRange: "5 - 12 jaar",
+    vanaf: 169,
+    gradient: "from-mint-soft to-yellow-soft",
+    activities: [
+      "Waterspelletjes",
+      "Survivalparcours in de tuin",
+      "Zomerse schattenjacht",
+      "Zelfgemaakte fruitijsjes",
+    ],
+    includes: [
+      "Alle buitenspel-materialen",
+      "Waterspellen-attributen",
+      "Begeleiding door Rosa of Charlotte",
+      "Verkoeling voor iedereen",
+    ],
+    featured: false,
+  },
+];
+
 type ThemeRow = {
   slug: string;
   name: string;
@@ -313,6 +420,31 @@ async function ensureSeeded() {
       `;
     }
   }
+  await ensureSeasonalThemesSeeded();
+}
+
+declare global {
+  var __richarSeasonalThemesSeeded: Promise<void> | undefined;
+}
+
+async function seedSeasonalThemes() {
+  const [{ max }] = await sql<{ max: number | null }[]>`SELECT MAX(sort_order) as max FROM themes`;
+  let nextOrder = (max ?? -1) + 1;
+  for (const t of seasonalThemes) {
+    await sql`
+      INSERT INTO themes (slug, name, emoji, tagline, description, long_description, age_range, vanaf, gradient, activities, includes, featured, sort_order, checklist)
+      VALUES (${t.slug}, ${t.name}, ${t.emoji}, ${t.tagline}, ${t.description}, ${t.longDescription}, ${t.ageRange}, ${t.vanaf}, ${t.gradient}, ${sql.json(t.activities)}, ${sql.json(t.includes)}, ${t.featured}, ${nextOrder}, ${sql.json(DEFAULT_CHECKLIST)})
+      ON CONFLICT (slug) DO NOTHING
+    `;
+    nextOrder += 1;
+  }
+}
+
+function ensureSeasonalThemesSeeded(): Promise<void> {
+  if (!globalThis.__richarSeasonalThemesSeeded) {
+    globalThis.__richarSeasonalThemesSeeded = seedSeasonalThemes();
+  }
+  return globalThis.__richarSeasonalThemesSeeded;
 }
 
 export async function getThemes(): Promise<Theme[]> {

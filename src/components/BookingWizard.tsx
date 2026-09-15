@@ -59,10 +59,12 @@ export default function BookingWizard({ themes }: { themes: Theme[] }) {
   const [form, setForm] = useState<FormState>(() => {
     const thema = searchParams.get("thema");
     const pakket = searchParams.get("pakket");
+    const datum = searchParams.get("datum");
     return {
       ...initialState,
       themeSlug: thema && themes.some((t) => t.slug === thema) ? thema : initialState.themeSlug,
       packageId: pakket && getPackage(pakket) ? pakket : initialState.packageId,
+      date: datum && /^\d{4}-\d{2}-\d{2}$/.test(datum) ? datum : initialState.date,
     };
   });
   const [errors, setErrors] = useState<Record<string, string>>({});

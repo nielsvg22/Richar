@@ -3,6 +3,7 @@ import type { Booking } from "./bookings";
 import type { Voucher } from "./vouchers";
 import { getExtra } from "./pricing";
 import { getSettings } from "./settings";
+import { getInvoiceForBooking } from "./invoices";
 
 async function getClient() {
   const settings = await getSettings();
@@ -212,6 +213,55 @@ export async function sendReviewRequest(booking: Booking) {
   );
 
   return send(booking.email, `Hoe vonden jullie het feestje van ${booking.childName}?`, html);
+}
+
+export async function sendInvoiceEmail(booking: Booking, origin?: string) {
+  const invoice = await getInvoiceForBooking(booking.id);
+  const remaining = booking.depositPaid ? booking.totalPrice - booking.depositAmount : booking.totalPrice;
+
+  const html = wrapper(
+    "Jullie factuur 🧾",
+    `
+    <p>Hoi ${booking.parentName.split(" ")[0]},</p>
+    <p>Hierbij de factuur voor het <strong>${booking.themeName}</strong> van ${booking.childName}.</p>
+    <table style="width:100%;border-collapse:collapse;margin:20px 0;font-size:14px;">
+      <tr><td style="padding:6px 0;color:#6b6259;">Factuurnummer</td><td style="padding:6px 0;text-align:right;font-weight:bold;">${invoice?.number ?? ""}</td></tr>
+      <tr><td style="padding:6px 0;color:#6b6259;">Datum feestje</td><td style="padding:6px 0;text-align:right;">${formatDate(booking.date)}</td></tr>
+      <tr><td style="padding:10px 0 0;font-weight:bold;">Totaalbedrag</td><td style="padding:10px 0 0;text-align:right;font-weight:bold;color:#F28F79;">€${booking.totalPrice}</td></tr>
+      <tr><td style="padding:6px 0;color:#6b6259;">Nog te betalen</td><td style="padding:6px 0;text-align:right;">€${Math.max(0, remaining)}</td></tr>
+    </table>
+    <p style="margin-top:20px;">
+      <a href="${siteUrl(origin)}/factuur/${booking.id}" style="display:inline-block;background:#292522;color:#ffffff;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:bold;">Bekijk en download de factuur</a>
+    </p>
+    <p>Heb je een vraag over de factuur? Antwoord gewoon op deze e-mail.</p>
+    <p>Liefs,<br/>Rosa &amp; Charlotte</p>
+    `
+  );
+
+  return send(booking.email, `Factuur ${invoice?.number ?? ""} — Rosa & Charlotte`, html);
+}
+
+export async function sendPaymentReminder(booking: Booking, origin?: string) {
+  const remaining = booking.depositPaid ? booking.totalPrice - booking.depositAmount : booking.totalPrice;
+
+  const html = wrapper(
+    "Vriendelijke betaalherinnering 💌",
+    `
+    <p>Hoi ${booking.parentName.split(" ")[0]},</p>
+    <p>Even een vriendelijke herinnering: voor het ${booking.themeName} van ${booking.childName} staat nog een bedrag open.</p>
+    <table style="width:100%;border-collapse:collapse;margin:20px 0;font-size:14px;">
+      <tr><td style="padding:6px 0;color:#6b6259;">Datum feestje</td><td style="padding:6px 0;text-align:right;">${formatDate(booking.date)}</td></tr>
+      <tr><td style="padding:10px 0 0;font-weight:bold;">Nog te betalen</td><td style="padding:10px 0 0;text-align:right;font-weight:bold;color:#F28F79;">€${Math.max(0, remaining)}</td></tr>
+    </table>
+    <p style="margin-top:20px;">
+      <a href="${siteUrl(origin)}/factuur/${booking.id}" style="display:inline-block;background:#F28F79;color:#ffffff;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:bold;">Bekijk de factuur</a>
+    </p>
+    <p>Heb je hem al betaald? Dan mag je deze mail natuurlijk negeren. Vragen? Antwoord gerust op deze e-mail.</p>
+    <p>Liefs,<br/>Rosa &amp; Charlotte</p>
+    `
+  );
+
+  return send(booking.email, `Betaalherinnering — ${booking.themeName}`, html);
 }
 
 export async function sendContactAutoReply(name: string, email: string) {

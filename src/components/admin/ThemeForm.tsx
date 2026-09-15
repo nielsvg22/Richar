@@ -247,7 +247,7 @@ export default function ThemeForm({ theme }: { theme?: Theme }) {
 
       {isEdit && theme && (
         <div>
-          <label className="text-sm font-semibold">Foto&apos;s voor het draaiboek</label>
+          <label className="text-sm font-semibold">Foto&apos;s (draaiboek &amp; themapagina)</label>
           <div className="mt-2">
             <ThemeImageManager slug={theme.slug} />
           </div>

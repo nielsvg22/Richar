@@ -77,8 +77,8 @@ export default function Footer({ logoUrl }: { logoUrl: string }) {
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-coral">
-                  Vraag beschikbaarheid
+                <Link href="/beschikbaarheid" className="hover:text-coral">
+                  Bekijk beschikbaarheid
                 </Link>
               </li>
               <li>

@@ -45,7 +45,7 @@ export type Booking = {
   viewedAt: string | null;
 };
 
-export type EmailType = "confirmation" | "reminder" | "review";
+export type EmailType = "confirmation" | "reminder" | "review" | "invoice" | "payment_reminder";
 
 type BookingRow = {
   id: string;

@@ -3,9 +3,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTheme, getThemes } from "@/lib/themes";
 import { packages } from "@/lib/pricing";
+import { getThemeImages } from "@/lib/themeImages";
 import ThemeGrid from "@/components/ThemeGrid";
 import CTASection from "@/components/CTASection";
 import JsonLd from "@/components/JsonLd";
+import ImageSlider from "@/components/ImageSlider";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +40,7 @@ export default async function ThemeDetailPage({
   if (!theme) notFound();
 
   const otherThemes = (await getThemes()).filter((t) => t.slug !== theme.slug).slice(0, 4);
+  const galleryImages = await getThemeImages(theme.slug);
 
   return (
     <>
@@ -168,6 +171,18 @@ export default async function ThemeDetailPage({
           </p>
         </aside>
       </section>
+
+      {galleryImages.length > 0 && (
+        <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+          <h2 className="font-heading text-2xl font-bold">Sfeerbeelden</h2>
+          <div className="mt-8">
+            <ImageSlider
+              images={galleryImages.map((img) => `/api/theme-images/${img.id}`)}
+              alt={`Sfeerbeeld van ${theme.name}`}
+            />
+          </div>
+        </section>
+      )}
 
       <section className="mx-auto max-w-7xl px-5 pb-20 sm:px-8">
         <h2 className="font-heading text-2xl font-bold">

@@ -17,6 +17,8 @@ const EMAIL_LABELS: Record<EmailType, { label: string; description: string }> = 
   confirmation: { label: "Bevestigingsmail", description: "Bedankt voor je boeking!" },
   reminder: { label: "Herinnering", description: "Bijna feest! 🎉" },
   review: { label: "Reviewverzoek", description: "Hoe vonden jullie het?" },
+  invoice: { label: "Factuur mailen", description: "Stuur de factuur met betaallink." },
+  payment_reminder: { label: "Betaalherinnering", description: "Vriendelijke herinnering bij openstaand bedrag." },
 };
 
 export default function BookingActions({ booking }: { booking: Booking }) {

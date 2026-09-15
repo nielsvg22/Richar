@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBooking, recordEmailSent, type EmailType } from "@/lib/bookings";
-import { sendBookingConfirmation, sendPartyReminder, sendReviewRequest } from "@/lib/email";
+import {
+  sendBookingConfirmation,
+  sendPartyReminder,
+  sendReviewRequest,
+  sendInvoiceEmail,
+  sendPaymentReminder,
+} from "@/lib/email";
 import { requireAdminApi } from "@/lib/adminAuth";
 
 const SENDERS: Record<EmailType, typeof sendBookingConfirmation> = {
   confirmation: sendBookingConfirmation,
   reminder: sendPartyReminder,
   review: sendReviewRequest,
+  invoice: sendInvoiceEmail,
+  payment_reminder: sendPaymentReminder,
 };
 
 export async function POST(
