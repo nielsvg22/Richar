@@ -6,7 +6,7 @@ export type ContactRequest = {
   email: string;
   phone: string;
   message: string;
-  source: "contact" | "account";
+  source: "contact" | "account" | "bedrijven";
   createdAt: string;
   viewedAt: string | null;
 };
@@ -52,7 +52,7 @@ export async function createContactRequest(data: {
   email: string;
   phone: string;
   message: string;
-  source: "contact" | "account";
+  source: "contact" | "account" | "bedrijven";
 }): Promise<ContactRequest> {
   await ensureSchema();
   const request: ContactRequest = {

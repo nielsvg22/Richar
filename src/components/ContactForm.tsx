@@ -2,7 +2,15 @@
 
 import { useState, type FormEvent } from "react";
 
-export default function ContactForm() {
+export default function ContactForm({
+  source = "contact",
+  messagePlaceholder = "Vertel ons over het feestje dat je in gedachten hebt...",
+  submitLabel = "Vraag beschikbaarheid",
+}: {
+  source?: "contact" | "bedrijven";
+  messagePlaceholder?: string;
+  submitLabel?: string;
+}) {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
     "idle"
   );
@@ -14,7 +22,7 @@ export default function ContactForm() {
     setError("");
 
     const form = e.currentTarget;
-    const data = Object.fromEntries(new FormData(form).entries());
+    const data = { ...Object.fromEntries(new FormData(form).entries()), source };
 
     try {
       const res = await fetch("/api/contact", {
@@ -102,7 +110,7 @@ export default function ContactForm() {
           required
           rows={5}
           className="mt-2 w-full rounded-2xl border border-ink/10 bg-white px-4 py-3 text-sm focus:border-coral focus:outline-none"
-          placeholder="Vertel ons over het feestje dat je in gedachten hebt..."
+          placeholder={messagePlaceholder}
         />
       </div>
 
@@ -117,7 +125,7 @@ export default function ContactForm() {
         disabled={status === "loading"}
         className="w-full rounded-full bg-ink px-6 py-4 text-sm font-semibold text-cream transition-transform hover:-translate-y-0.5 hover:bg-coral disabled:opacity-60"
       >
-        {status === "loading" ? "Versturen..." : "Vraag beschikbaarheid"}
+        {status === "loading" ? "Versturen..." : submitLabel}
       </button>
     </form>
   );

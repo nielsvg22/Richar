@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     email,
     phone: phone ?? "",
     message,
-    source: source === "account" ? "account" : "contact",
+    source: source === "account" || source === "bedrijven" ? source : "contact",
   });
 
   await sendContactAutoReply(name, email);

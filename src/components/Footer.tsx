@@ -63,6 +63,11 @@ export default function Footer({ logoUrl }: { logoUrl: string }) {
                   Blog
                 </Link>
               </li>
+              <li>
+                <Link href="/zakelijk" className="hover:text-coral">
+                  Zakelijk &amp; scholen
+                </Link>
+              </li>
             </ul>
           </div>
 

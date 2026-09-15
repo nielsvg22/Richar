@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
 const SOURCE_LABELS: Record<string, string> = {
   contact: "Contactformulier",
   account: "Klantportaal",
+  bedrijven: "Zakelijk",
 };
 
 export default async function BerichtenPage() {
