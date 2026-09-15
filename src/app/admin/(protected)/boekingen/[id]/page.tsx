@@ -7,6 +7,7 @@ import { getMaterialChecklistForBooking } from "@/lib/themeMaterials";
 import BookingActions from "@/components/admin/BookingActions";
 import InternalNotesEditor from "@/components/admin/InternalNotesEditor";
 import MaterialChecklist from "@/components/admin/MaterialChecklist";
+import SatisfactionRatingEditor from "@/components/admin/SatisfactionRatingEditor";
 
 export const metadata: Metadata = {
   title: "Boekingsdetail",
@@ -125,6 +126,15 @@ export default async function BookingDetailPage({
           <div className="mt-6">
             <MaterialChecklist items={materialChecklist} />
           </div>
+
+          {booking.status === "Afgerond" && (
+            <div className="mt-6">
+              <SatisfactionRatingEditor
+                bookingId={booking.id}
+                initialRating={booking.satisfactionRating}
+              />
+            </div>
+          )}
 
           <div className="mt-6">
             <InternalNotesEditor bookingId={booking.id} initialNotes={booking.internalNotes} />

@@ -43,6 +43,7 @@ export type Booking = {
   emailsSent: EmailType[];
   internalNotes: string;
   viewedAt: string | null;
+  satisfactionRating: number | null;
 };
 
 export type EmailType = "confirmation" | "reminder" | "review" | "invoice" | "payment_reminder";
@@ -82,6 +83,7 @@ type BookingRow = {
   emails_sent: EmailType[];
   internal_notes: string;
   viewed_at: Date | null;
+  satisfaction_rating: number | null;
 };
 
 function rowToBooking(row: BookingRow): Booking {
@@ -120,6 +122,7 @@ function rowToBooking(row: BookingRow): Booking {
     emailsSent: row.emails_sent,
     internalNotes: row.internal_notes,
     viewedAt: row.viewed_at ? row.viewed_at.toISOString() : null,
+    satisfactionRating: row.satisfaction_rating,
   };
 }
 
@@ -398,6 +401,22 @@ export async function setInternalNotes(id: string, notes: string) {
   await ensureSeeded();
   await sql`UPDATE bookings SET internal_notes = ${notes} WHERE id = ${id}`;
   return getBooking(id);
+}
+
+export async function setSatisfactionRating(id: string, rating: number | null) {
+  await ensureSeeded();
+  await sql`UPDATE bookings SET satisfaction_rating = ${rating} WHERE id = ${id}`;
+  return getBooking(id);
+}
+
+export async function getAverageSatisfactionRating(): Promise<{ average: number; count: number }> {
+  await ensureSeeded();
+  const [{ average, count }] = await sql<{ average: string | null; count: string }[]>`
+    SELECT AVG(satisfaction_rating)::text AS average, COUNT(satisfaction_rating)::text AS count
+    FROM bookings
+    WHERE satisfaction_rating IS NOT NULL
+  `;
+  return { average: average ? Number(average) : 0, count: Number(count) };
 }
 
 export async function markBookingViewed(id: string) {

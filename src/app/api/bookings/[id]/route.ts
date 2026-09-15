@@ -3,6 +3,7 @@ import {
   getBooking,
   updateBookingStatus,
   setInternalNotes,
+  setSatisfactionRating,
   type BookingStatus,
 } from "@/lib/bookings";
 import { requireAdminApi } from "@/lib/adminAuth";
@@ -64,6 +65,18 @@ export async function PATCH(
 
   if (body.internalNotes !== undefined) {
     const booking = await setInternalNotes(id, String(body.internalNotes));
+    if (!booking) {
+      return NextResponse.json({ error: "Boeking niet gevonden." }, { status: 404 });
+    }
+    return NextResponse.json(booking);
+  }
+
+  if (body.satisfactionRating !== undefined) {
+    const rating = body.satisfactionRating === null ? null : Number(body.satisfactionRating);
+    if (rating !== null && (rating < 1 || rating > 5)) {
+      return NextResponse.json({ error: "Beoordeling moet tussen 1 en 5 zijn." }, { status: 400 });
+    }
+    const booking = await setSatisfactionRating(id, rating);
     if (!booking) {
       return NextResponse.json({ error: "Boeking niet gevonden." }, { status: 404 });
     }

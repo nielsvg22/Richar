@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getBookings, type BookingStatus } from "@/lib/bookings";
+import { getBookings, getAverageSatisfactionRating, type BookingStatus } from "@/lib/bookings";
 import { getMonthlyRevenue, getRevenueByTheme } from "@/lib/analytics";
 import StatsCard from "@/components/admin/StatsCard";
 import BookingTable from "@/components/admin/BookingTable";
@@ -55,6 +55,7 @@ export default async function AdminDashboard({
 
   const monthlyRevenue = await getMonthlyRevenue(6);
   const revenueByTheme = await getRevenueByTheme(6);
+  const satisfaction = await getAverageSatisfactionRating();
 
   return (
     <div>
@@ -97,6 +98,12 @@ export default async function AdminDashboard({
           value={String(upcoming.length)}
           emoji="🎉"
           accent="bg-coral-soft"
+        />
+        <StatsCard
+          label="Gemiddelde tevredenheid"
+          value={satisfaction.count > 0 ? `${satisfaction.average.toFixed(1)} / 5 ⭐` : "Nog geen data"}
+          emoji="💬"
+          accent="bg-pink-soft"
         />
       </div>
 

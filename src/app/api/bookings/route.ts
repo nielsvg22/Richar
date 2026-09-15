@@ -125,6 +125,7 @@ export async function POST(request: NextRequest) {
     emailsSent: [],
     internalNotes: "",
     viewedAt: null,
+    satisfactionRating: null,
   };
 
   await saveBooking(booking);

@@ -29,6 +29,12 @@ export default async function FeestjesPage() {
           een thema, of laat je inspireren, en wij maken er een onvergetelijk
           feestje van.
         </p>
+        <Link
+          href="/quiz"
+          className="mt-6 inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-sm font-semibold text-cream hover:bg-coral"
+        >
+          🎁 Twijfel je nog? Doe de quiz
+        </Link>
       </section>
 
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8">

@@ -97,6 +97,7 @@ async function migrate() {
       viewed_at TIMESTAMPTZ
     )
   `;
+  await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS satisfaction_rating INTEGER`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS customers (
