@@ -9,6 +9,8 @@ const links = [
   { href: "/admin/berichten", label: "Berichten", emoji: "📨", badgeKey: "unviewedMessages" },
   { href: "/admin/feestjes", label: "Feestjes", emoji: "🎨", badgeKey: null },
   { href: "/admin/workshops", label: "Workshops", emoji: "🖌️", badgeKey: null },
+  { href: "/admin/webshop", label: "Webshop", emoji: "🛍️", badgeKey: null },
+  { href: "/admin/bestellingen", label: "Bestellingen", emoji: "📦", badgeKey: null },
   { href: "/admin/kortingscodes", label: "Kortingscodes", emoji: "🏷️", badgeKey: null },
   { href: "/admin/cadeaubonnen", label: "Cadeaubonnen", emoji: "🎁", badgeKey: null },
   { href: "/admin/facturen", label: "Facturen", emoji: "🧾", badgeKey: null },

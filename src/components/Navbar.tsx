@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
+import { useCart } from "./CartContext";
 
 const links = [
   { href: "/feestjes", label: "Feestjes" },
@@ -18,6 +19,7 @@ const links = [
 export default function Navbar({ logoUrl }: { logoUrl: string }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const { totalItems } = useCart();
 
   if (pathname?.startsWith("/admin")) return null;
 
@@ -54,6 +56,18 @@ export default function Navbar({ logoUrl }: { logoUrl: string }) {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
+          <Link
+            href="/webshop/winkelwagen"
+            aria-label="Winkelwagen"
+            className="relative flex h-11 w-11 items-center justify-center rounded-full bg-ink/5 text-lg hover:bg-mint-soft"
+          >
+            🛍️
+            {totalItems > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-coral px-1 text-[11px] font-bold text-white">
+                {totalItems}
+              </span>
+            )}
+          </Link>
           <Link
             href="/account"
             aria-label="Mijn account"
@@ -93,6 +107,13 @@ export default function Navbar({ logoUrl }: { logoUrl: string }) {
                 {link.label}
               </Link>
             ))}
+            <Link
+              href="/webshop/winkelwagen"
+              onClick={() => setOpen(false)}
+              className="rounded-xl px-3 py-3 text-base font-medium text-ink/80"
+            >
+              🛍️ Winkelwagen{totalItems > 0 ? ` (${totalItems})` : ""}
+            </Link>
             <Link
               href="/account"
               onClick={() => setOpen(false)}

@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import StickyMobileCTA from "@/components/StickyMobileCTA";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import JsonLd from "@/components/JsonLd";
+import { CartProvider } from "@/components/CartContext";
 import { getSiteImageSlot, siteImageUrl } from "@/lib/siteImages";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -77,11 +78,13 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             },
           }}
         />
-        <Navbar logoUrl={logoUrl} />
-        <main className="flex-1 pb-16 md:pb-0">{children}</main>
-        <Footer logoUrl={logoUrl} />
-        <StickyMobileCTA />
-        <WhatsAppButton />
+        <CartProvider>
+          <Navbar logoUrl={logoUrl} />
+          <main className="flex-1 pb-16 md:pb-0">{children}</main>
+          <Footer logoUrl={logoUrl} />
+          <StickyMobileCTA />
+          <WhatsAppButton />
+        </CartProvider>
       </body>
     </html>
   );

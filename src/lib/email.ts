@@ -4,6 +4,7 @@ import type { Voucher } from "./vouchers";
 import { getExtra } from "./pricing";
 import { getSettings } from "./settings";
 import { getInvoiceForBooking } from "./invoices";
+import type { Order } from "./orders";
 
 async function getClient() {
   const settings = await getSettings();
@@ -329,6 +330,32 @@ export async function sendBirthdayReminder(booking: Booking, origin?: string) {
     `Vorig jaar was ${booking.childName} jarig — dit jaar weer? 🎂`,
     html
   );
+}
+
+export async function sendOrderConfirmation(order: Order) {
+  const itemRows = order.items
+    .map(
+      (item) =>
+        `<tr><td style="padding:6px 0;color:#6b6259;">${item.name} × ${item.quantity}</td><td style="padding:6px 0;text-align:right;">€${item.price * item.quantity}</td></tr>`
+    )
+    .join("");
+
+  const html = wrapper(
+    "Bedankt voor je bestelling! 🎁",
+    `
+    <p>Hoi ${order.customerName.split(" ")[0]},</p>
+    <p>We hebben je betaling ontvangen. Hier is een overzicht van je bestelling:</p>
+    <table style="width:100%;border-collapse:collapse;margin:20px 0;font-size:14px;">
+      ${itemRows}
+      <tr><td style="padding:10px 0 0;font-weight:bold;">Totaal</td><td style="padding:10px 0 0;text-align:right;font-weight:bold;color:#F28F79;">€${order.totalPrice}</td></tr>
+    </table>
+    <p>Bestelnummer: <strong>${order.id}</strong></p>
+    <p>We nemen contact met je op om de bezorging of het ophalen af te stemmen.</p>
+    <p>Liefs,<br/>Rosa &amp; Charlotte</p>
+    `
+  );
+
+  return send(order.email, `Bedankt voor je bestelling! (${order.id})`, html);
 }
 
 export async function sendContactAutoReply(name: string, email: string) {

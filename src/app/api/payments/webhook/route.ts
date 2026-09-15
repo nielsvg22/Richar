@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBookingByMolliePaymentId, markDepositPaid } from "@/lib/bookings";
 import { getVoucherByMolliePaymentId, activateVoucher } from "@/lib/vouchers";
+import { getOrderByMolliePaymentId, markOrderPaid } from "@/lib/orders";
+import { decrementStock } from "@/lib/products";
 import { getMolliePayment } from "@/lib/mollie";
-import { sendVoucherEmail } from "@/lib/email";
+import { sendVoucherEmail, sendOrderConfirmation } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
@@ -28,6 +30,17 @@ export async function POST(request: NextRequest) {
     if (voucher && voucher.status === "unpaid") {
       const activated = await activateVoucher(voucher.code);
       if (activated) await sendVoucherEmail(activated);
+    }
+
+    const order = await getOrderByMolliePaymentId(paymentId);
+    if (order && order.status === "unpaid") {
+      const paidOrder = await markOrderPaid(order.id);
+      if (paidOrder) {
+        for (const item of paidOrder.items) {
+          await decrementStock(item.slug, item.quantity);
+        }
+        await sendOrderConfirmation(paidOrder);
+      }
     }
 
     return NextResponse.json({ received: true });

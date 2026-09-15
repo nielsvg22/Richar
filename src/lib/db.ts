@@ -269,6 +269,46 @@ async function migrate() {
       PRIMARY KEY (booking_id, year)
     )
   `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS products (
+      slug TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      price INTEGER NOT NULL DEFAULT 0,
+      stock INTEGER NOT NULL DEFAULT 0,
+      published BOOLEAN NOT NULL DEFAULT true,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS product_images (
+      id TEXT PRIMARY KEY,
+      product_slug TEXT NOT NULL,
+      content_type TEXT NOT NULL,
+      data BYTEA NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS product_images_product_slug_idx ON product_images (product_slug, sort_order)`;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS orders (
+      id TEXT PRIMARY KEY,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      items JSONB NOT NULL DEFAULT '[]',
+      customer_name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT NOT NULL DEFAULT '',
+      total_price INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'unpaid',
+      mollie_payment_id TEXT
+    )
+  `;
 }
 
 export function ensureSchema(): Promise<void> {
