@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getBookings, saveBooking, recordEmailSent, type Booking } from "@/lib/bookings";
 import { getTheme } from "@/lib/themes";
 import { getPackage, getExtra, EXTRA_CHILD_PRICE } from "@/lib/pricing";
-import { sendBookingConfirmation, sendInternalBookingNotification } from "@/lib/email";
-import { isBookable } from "@/lib/availability";
+import { sendBookingConfirmation, sendInternalBookingNotification, sendDateAlmostFullNotification } from "@/lib/email";
+import { isBookable, MAX_BOOKINGS_PER_DAY } from "@/lib/availability";
 import { validateDiscount, incrementDiscountUsage } from "@/lib/discounts";
 import { validateVoucher, redeemVoucherAmount } from "@/lib/vouchers";
 import { requireAdminApi } from "@/lib/adminAuth";
@@ -142,6 +142,13 @@ export async function POST(request: NextRequest) {
     booking.emailsSent = ["confirmation"];
   }
   await sendInternalBookingNotification(booking, request.nextUrl.origin);
+
+  const bookingsOnDate = (await getBookings()).filter(
+    (b) => b.date === date && b.status !== "Geannuleerd"
+  ).length;
+  if (bookingsOnDate === MAX_BOOKINGS_PER_DAY) {
+    await sendDateAlmostFullNotification(date, bookingsOnDate, MAX_BOOKINGS_PER_DAY, request.nextUrl.origin);
+  }
 
   return NextResponse.json(booking, { status: 201 });
 }

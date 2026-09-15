@@ -3,8 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getBooking, markBookingViewed } from "@/lib/bookings";
 import { getExtra } from "@/lib/pricing";
+import { getMaterialChecklistForBooking } from "@/lib/themeMaterials";
 import BookingActions from "@/components/admin/BookingActions";
 import InternalNotesEditor from "@/components/admin/InternalNotesEditor";
+import MaterialChecklist from "@/components/admin/MaterialChecklist";
 
 export const metadata: Metadata = {
   title: "Boekingsdetail",
@@ -22,6 +24,7 @@ export default async function BookingDetailPage({
   const existing = await getBooking(id);
   if (!existing) notFound();
   const booking = (await markBookingViewed(id)) ?? existing;
+  const materialChecklist = await getMaterialChecklistForBooking(booking);
 
   return (
     <div>
@@ -117,6 +120,10 @@ export default async function BookingDetailPage({
                 value={new Date(booking.createdAt).toLocaleDateString("nl-NL")}
               />
             </div>
+          </div>
+
+          <div className="mt-6">
+            <MaterialChecklist items={materialChecklist} />
           </div>
 
           <div className="mt-6">

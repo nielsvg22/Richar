@@ -215,6 +215,23 @@ export async function sendReviewRequest(booking: Booking) {
   return send(booking.email, `Hoe vonden jullie het feestje van ${booking.childName}?`, html);
 }
 
+export async function sendDateAlmostFullNotification(date: string, count: number, max: number, origin?: string) {
+  const settings = await getSettings();
+  const to = settings.emailReplyTo || "hallo@rosaencharlotte.nl";
+
+  const html = wrapper(
+    "📅 Datum volgeboekt",
+    `
+    <p><strong>${formatDate(date)}</strong> heeft nu ${count} van de ${max} boekingen en zit vol.</p>
+    <p style="margin-top:20px;">
+      <a href="${siteUrl(origin)}/admin/agenda" style="display:inline-block;background:#292522;color:#ffffff;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:bold;">Bekijk de agenda</a>
+    </p>
+    `
+  );
+
+  return send(to, `Datum volgeboekt: ${formatDate(date)}`, html);
+}
+
 export async function sendInvoiceEmail(booking: Booking, origin?: string) {
   const invoice = await getInvoiceForBooking(booking.id);
   const remaining = booking.depositPaid ? booking.totalPrice - booking.depositAmount : booking.totalPrice;
@@ -262,6 +279,32 @@ export async function sendPaymentReminder(booking: Booking, origin?: string) {
   );
 
   return send(booking.email, `Betaalherinnering — ${booking.themeName}`, html);
+}
+
+export async function sendLoyaltyRewardEmail(
+  booking: Booking,
+  discountCode: string,
+  discountPercent: number
+) {
+  const html = wrapper(
+    "Bedankt dat je terugkomt! 💛",
+    `
+    <p>Hoi ${booking.parentName.split(" ")[0]},</p>
+    <p>Wat leuk dat jullie steeds weer voor Rosa &amp; Charlotte kiezen! Als bedankje krijgen jullie een persoonlijke kortingscode voor het volgende feestje.</p>
+    <div style="margin:24px 0;padding:24px;border-radius:20px;background:#BFE4D0;text-align:center;">
+      <p style="margin:0;font-size:13px;color:#292522;">Jullie trouwe-klant-korting</p>
+      <p style="margin:4px 0;font-size:32px;font-weight:bold;color:#292522;">${discountPercent}%</p>
+      <p style="margin:8px 0 0;font-size:20px;font-weight:bold;letter-spacing:2px;color:#292522;">${discountCode}</p>
+    </div>
+    <p>Vul deze code in bij het boeken van jullie volgende feestje.</p>
+    <p style="margin-top:20px;">
+      <a href="${siteUrl()}/boeken" style="display:inline-block;background:#292522;color:#ffffff;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:bold;">Boek het volgende feestje</a>
+    </p>
+    <p>Liefs,<br/>Rosa &amp; Charlotte</p>
+    `
+  );
+
+  return send(booking.email, "Bedankt! Hier is jullie trouwe-klant-korting 💛", html);
 }
 
 export async function sendContactAutoReply(name: string, email: string) {

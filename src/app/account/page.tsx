@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentCustomer } from "@/lib/session";
 import { getBookingsForCustomer } from "@/lib/bookings";
+import { getLoyaltyAccount, LOYALTY_THRESHOLD, LOYALTY_DISCOUNT_PERCENT } from "@/lib/loyalty";
 import StatsCard from "@/components/admin/StatsCard";
 import AccountShell from "@/components/AccountShell";
 import AccountBookingList from "@/components/AccountBookingList";
@@ -36,6 +37,10 @@ export default async function AccountPage() {
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .slice(0, 3);
 
+  const loyalty = await getLoyaltyAccount(customer.id);
+  const bookingsUntilReward =
+    LOYALTY_THRESHOLD - (loyalty.completedBookings % LOYALTY_THRESHOLD);
+
   return (
     <AccountShell
       name={customer.name}
@@ -67,6 +72,31 @@ export default async function AccountPage() {
           emoji="💶"
           accent="bg-yellow-soft"
         />
+      </div>
+
+      <div className="mt-8 rounded-[2rem] bg-mint-soft p-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="font-heading text-lg font-bold">Trouwe-klant-korting 💛</h2>
+            <p className="mt-1 text-sm text-ink/70">
+              {loyalty.completedBookings === 0
+                ? `Na ${LOYALTY_THRESHOLD} afgeronde feestjes krijgen jullie automatisch ${LOYALTY_DISCOUNT_PERCENT}% korting op het volgende.`
+                : `Nog ${bookingsUntilReward} ${bookingsUntilReward === 1 ? "feestje" : "feestjes"} tot jullie volgende ${LOYALTY_DISCOUNT_PERCENT}% korting.`}
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {Array.from({ length: LOYALTY_THRESHOLD }, (_, i) => (
+              <span
+                key={i}
+                className={`flex h-9 w-9 items-center justify-center rounded-full text-sm ${
+                  i < loyalty.completedBookings % LOYALTY_THRESHOLD ? "bg-ink text-cream" : "bg-white/70"
+                }`}
+              >
+                🎉
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="mt-8">

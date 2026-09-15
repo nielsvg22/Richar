@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { GRADIENT_OPTIONS, DEFAULT_CHECKLIST, type Theme } from "@/lib/theme-constants";
 import ThemeImageManager from "./ThemeImageManager";
+import ThemeMaterialsEditor from "./ThemeMaterialsEditor";
 
 type ThemeFormValues = {
   name: string;
@@ -250,6 +251,17 @@ export default function ThemeForm({ theme }: { theme?: Theme }) {
           <label className="text-sm font-semibold">Foto&apos;s (draaiboek &amp; themapagina)</label>
           <div className="mt-2">
             <ThemeImageManager slug={theme.slug} />
+          </div>
+        </div>
+      )}
+
+      {isEdit && theme && (
+        <div>
+          <label className="text-sm font-semibold">
+            Benodigde materialen (voor de materiaalchecklist per boeking)
+          </label>
+          <div className="mt-2">
+            <ThemeMaterialsEditor slug={theme.slug} />
           </div>
         </div>
       )}

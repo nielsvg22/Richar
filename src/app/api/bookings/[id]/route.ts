@@ -6,6 +6,8 @@ import {
   type BookingStatus,
 } from "@/lib/bookings";
 import { requireAdminApi } from "@/lib/adminAuth";
+import { recordCompletedBooking } from "@/lib/loyalty";
+import { sendLoyaltyRewardEmail } from "@/lib/email";
 
 const VALID_STATUSES: BookingStatus[] = [
   "Nieuw",
@@ -49,6 +51,14 @@ export async function PATCH(
     if (!booking) {
       return NextResponse.json({ error: "Boeking niet gevonden." }, { status: 404 });
     }
+
+    if (body.status === "Afgerond" && booking.customerId) {
+      const reward = await recordCompletedBooking(booking.customerId);
+      if (reward) {
+        await sendLoyaltyRewardEmail(booking, reward.code, reward.value);
+      }
+    }
+
     return NextResponse.json(booking);
   }
 

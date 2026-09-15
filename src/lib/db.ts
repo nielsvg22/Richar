@@ -242,6 +242,23 @@ async function migrate() {
     )
   `;
   await sql`CREATE INDEX IF NOT EXISTS workshop_images_workshop_slug_idx ON workshop_images (workshop_slug, sort_order)`;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS theme_materials (
+      theme_slug TEXT NOT NULL,
+      inventory_item_id TEXT NOT NULL,
+      quantity INTEGER NOT NULL DEFAULT 1,
+      PRIMARY KEY (theme_slug, inventory_item_id)
+    )
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS loyalty_accounts (
+      customer_id TEXT PRIMARY KEY,
+      completed_bookings INTEGER NOT NULL DEFAULT 0,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
 }
 
 export function ensureSchema(): Promise<void> {
