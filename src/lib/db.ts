@@ -259,6 +259,15 @@ async function migrate() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS birthday_reminders_sent (
+      booking_id TEXT NOT NULL,
+      year INTEGER NOT NULL,
+      sent_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      PRIMARY KEY (booking_id, year)
+    )
+  `;
 }
 
 export function ensureSchema(): Promise<void> {

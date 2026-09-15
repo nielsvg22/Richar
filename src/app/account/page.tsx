@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentCustomer } from "@/lib/session";
 import { getBookingsForCustomer } from "@/lib/bookings";
 import { getLoyaltyAccount, LOYALTY_THRESHOLD, LOYALTY_DISCOUNT_PERCENT } from "@/lib/loyalty";
+import { findUpcomingAnniversaries } from "@/lib/anniversaries";
 import StatsCard from "@/components/admin/StatsCard";
 import AccountShell from "@/components/AccountShell";
 import AccountBookingList from "@/components/AccountBookingList";
@@ -41,6 +42,8 @@ export default async function AccountPage() {
   const bookingsUntilReward =
     LOYALTY_THRESHOLD - (loyalty.completedBookings % LOYALTY_THRESHOLD);
 
+  const upcomingAnniversaries = findUpcomingAnniversaries(bookings, 60);
+
   return (
     <AccountShell
       name={customer.name}
@@ -73,6 +76,32 @@ export default async function AccountPage() {
           accent="bg-yellow-soft"
         />
       </div>
+
+      {upcomingAnniversaries.length > 0 && (
+        <div className="mt-8 space-y-3">
+          {upcomingAnniversaries.map((match) => (
+            <div
+              key={match.booking.id}
+              className="flex flex-wrap items-center justify-between gap-4 rounded-[2rem] bg-pink-soft p-6"
+            >
+              <div>
+                <h2 className="font-heading text-lg font-bold">Binnenkort weer jarig? 🎂</h2>
+                <p className="mt-1 text-sm text-ink/70">
+                  {match.daysUntil === 0
+                    ? `Vandaag is het een jaar geleden dat ${match.booking.childName} het ${match.booking.themeName} vierde!`
+                    : `Over ${match.daysUntil} ${match.daysUntil === 1 ? "dag" : "dagen"} is het een jaar geleden dat ${match.booking.childName} het ${match.booking.themeName} vierde.`}
+                </p>
+              </div>
+              <Link
+                href={`/boeken?thema=${match.booking.themeSlug}`}
+                className="rounded-full bg-ink px-6 py-3 text-sm font-semibold text-cream hover:bg-coral"
+              >
+                Boek opnieuw
+              </Link>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="mt-8 rounded-[2rem] bg-mint-soft p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">

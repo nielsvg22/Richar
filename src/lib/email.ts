@@ -307,6 +307,30 @@ export async function sendLoyaltyRewardEmail(
   return send(booking.email, "Bedankt! Hier is jullie trouwe-klant-korting 💛", html);
 }
 
+export async function sendBirthdayReminder(booking: Booking, origin?: string) {
+  const html = wrapper(
+    "Alweer bijna een jaar verder! 🎂",
+    `
+    <p>Hoi ${booking.parentName.split(" ")[0]},</p>
+    <p>Vorig jaar vierden jullie het ${booking.themeName} van ${booking.childName} bij ons — wat was dat een leuk feest! De verjaardag komt er waarschijnlijk weer aan.</p>
+    <p>Zullen we er dit jaar weer iets moois van maken?</p>
+    <p style="margin-top:20px;">
+      <a href="${siteUrl(origin)}/boeken?thema=${booking.themeSlug}" style="display:inline-block;background:#F28F79;color:#ffffff;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:bold;">Boek dit jaar weer een feestje</a>
+    </p>
+    <p style="margin-top:12px;">
+      <a href="${siteUrl(origin)}/feestjes" style="display:inline-block;color:#292522;text-decoration:underline;">Of bekijk alle thema&apos;s</a>
+    </p>
+    <p>Liefs,<br/>Rosa &amp; Charlotte</p>
+    `
+  );
+
+  return send(
+    booking.email,
+    `Vorig jaar was ${booking.childName} jarig — dit jaar weer? 🎂`,
+    html
+  );
+}
+
 export async function sendContactAutoReply(name: string, email: string) {
   const html = wrapper(
     "We hebben je bericht ontvangen! 👋",
