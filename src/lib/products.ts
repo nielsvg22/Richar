@@ -1,4 +1,4 @@
-import { sql, ensureSchema } from "./db";
+import { sql, ensureSchema, memoizeOnce } from "./db";
 import { slugify } from "./themes";
 import type { Product } from "./product-constants";
 
@@ -61,20 +61,21 @@ function rowToProduct(row: ProductRow): Product {
   };
 }
 
-async function ensureSeeded() {
+const ensureSeeded = memoizeOnce("products", async () => {
   await ensureSchema();
   const [{ count }] = await sql<{ count: string }[]>`SELECT COUNT(*)::text FROM products`;
   if (Number(count) === 0) {
-    for (let i = 0; i < placeholderProducts.length; i++) {
-      const p = placeholderProducts[i];
-      await sql`
-        INSERT INTO products (slug, name, description, price, stock, published, sort_order)
-        VALUES (${p.slug}, ${p.name}, ${p.description}, ${p.price}, ${p.stock}, ${p.published}, ${i})
-        ON CONFLICT (slug) DO NOTHING
-      `;
-    }
+    await Promise.all(
+      placeholderProducts.map(
+        (p, i) => sql`
+          INSERT INTO products (slug, name, description, price, stock, published, sort_order)
+          VALUES (${p.slug}, ${p.name}, ${p.description}, ${p.price}, ${p.stock}, ${p.published}, ${i})
+          ON CONFLICT (slug) DO NOTHING
+        `
+      )
+    );
   }
-}
+});
 
 export async function getProducts(): Promise<Product[]> {
   await ensureSeeded();

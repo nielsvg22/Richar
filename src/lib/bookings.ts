@@ -1,4 +1,4 @@
-import { sql, ensureSchema } from "./db";
+import { sql, ensureSchema, memoizeOnce } from "./db";
 
 export type BookingStatus =
   | "Nieuw"
@@ -292,29 +292,31 @@ function seedBookings() {
   ];
 }
 
-async function ensureSeeded() {
+const ensureSeeded = memoizeOnce("bookings", async () => {
   await ensureSchema();
   const [{ count }] = await sql<{ count: string }[]>`SELECT COUNT(*)::text FROM bookings`;
   if (Number(count) === 0) {
-    for (const b of seedBookings()) {
-      await sql`
-        INSERT INTO bookings (
-          id, created_at, theme_slug, theme_name, package_id, package_name, kids, date, time,
-          location, location_type, extras, parent_name, email, phone, child_name, child_age, notes,
-          base_price, extra_kids_price, extras_price, discount_code, discount_amount, voucher_code,
-          voucher_amount, total_price, deposit_amount, deposit_paid, status
-        ) VALUES (
-          ${b.id}, ${b.createdAt}, ${b.themeSlug}, ${b.themeName}, ${b.packageId}, ${b.packageName},
-          ${b.kids}, ${b.date}, ${b.time}, ${b.location}, ${b.locationType}, ${sql.json(b.extras)},
-          ${b.parentName}, ${b.email}, ${b.phone}, ${b.childName}, ${b.childAge}, ${b.notes},
-          ${b.basePrice}, ${b.extraKidsPrice}, ${b.extrasPrice}, ${b.discountCode}, ${b.discountAmount},
-          ${b.voucherCode}, ${b.voucherAmount}, ${b.totalPrice}, ${b.depositAmount}, ${b.depositPaid}, ${b.status}
-        )
-        ON CONFLICT (id) DO NOTHING
-      `;
-    }
+    await Promise.all(
+      seedBookings().map(
+        (b) => sql`
+          INSERT INTO bookings (
+            id, created_at, theme_slug, theme_name, package_id, package_name, kids, date, time,
+            location, location_type, extras, parent_name, email, phone, child_name, child_age, notes,
+            base_price, extra_kids_price, extras_price, discount_code, discount_amount, voucher_code,
+            voucher_amount, total_price, deposit_amount, deposit_paid, status
+          ) VALUES (
+            ${b.id}, ${b.createdAt}, ${b.themeSlug}, ${b.themeName}, ${b.packageId}, ${b.packageName},
+            ${b.kids}, ${b.date}, ${b.time}, ${b.location}, ${b.locationType}, ${sql.json(b.extras)},
+            ${b.parentName}, ${b.email}, ${b.phone}, ${b.childName}, ${b.childAge}, ${b.notes},
+            ${b.basePrice}, ${b.extraKidsPrice}, ${b.extrasPrice}, ${b.discountCode}, ${b.discountAmount},
+            ${b.voucherCode}, ${b.voucherAmount}, ${b.totalPrice}, ${b.depositAmount}, ${b.depositPaid}, ${b.status}
+          )
+          ON CONFLICT (id) DO NOTHING
+        `
+      )
+    );
   }
-}
+});
 
 export async function getBookings(): Promise<Booking[]> {
   await ensureSeeded();

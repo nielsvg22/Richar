@@ -1,4 +1,4 @@
-import { sql, ensureSchema } from "./db";
+import { sql, ensureSchema, memoizeOnce } from "./db";
 
 export type InventoryItem = {
   id: string;
@@ -38,19 +38,21 @@ const defaultItems = [
   { name: "Wetenschapsproefjes-kit", quantity: 3, unit: "kits", lowStockThreshold: 4 },
 ];
 
-async function ensureSeeded() {
+const ensureSeeded = memoizeOnce("inventory", async () => {
   await ensureSchema();
   const [{ count }] = await sql<{ count: string }[]>`SELECT COUNT(*)::text FROM inventory`;
   if (Number(count) === 0) {
-    for (let i = 0; i < defaultItems.length; i++) {
-      const item = defaultItems[i];
-      await sql`
-        INSERT INTO inventory (id, name, quantity, unit, low_stock_threshold)
-        VALUES (${String(Date.now() + i)}, ${item.name}, ${item.quantity}, ${item.unit}, ${item.lowStockThreshold})
-      `;
-    }
+    const baseId = Date.now();
+    await Promise.all(
+      defaultItems.map(
+        (item, i) => sql`
+          INSERT INTO inventory (id, name, quantity, unit, low_stock_threshold)
+          VALUES (${String(baseId + i)}, ${item.name}, ${item.quantity}, ${item.unit}, ${item.lowStockThreshold})
+        `
+      )
+    );
   }
-}
+});
 
 export async function getInventory(): Promise<InventoryItem[]> {
   await ensureSeeded();

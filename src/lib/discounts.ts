@@ -1,4 +1,4 @@
-import { sql, ensureSchema } from "./db";
+import { sql, ensureSchema, memoizeOnce } from "./db";
 
 export type DiscountCode = {
   code: string;
@@ -38,7 +38,7 @@ function rowToDiscount(row: DiscountRow): DiscountCode {
   };
 }
 
-async function ensureSeeded() {
+const ensureSeeded = memoizeOnce("discounts", async () => {
   await ensureSchema();
   const [{ count }] = await sql<{ count: string }[]>`SELECT COUNT(*)::text FROM discounts`;
   if (Number(count) === 0) {
@@ -48,7 +48,7 @@ async function ensureSeeded() {
       ON CONFLICT (code) DO NOTHING
     `;
   }
-}
+});
 
 export async function getDiscounts(): Promise<DiscountCode[]> {
   await ensureSeeded();

@@ -1,4 +1,4 @@
-import { sql, ensureSchema } from "./db";
+import { sql, ensureSchema, memoizeOnce } from "./db";
 import { slugify } from "./themes";
 import type { Workshop } from "./workshop-constants";
 
@@ -188,29 +188,30 @@ function rowToWorkshop(row: WorkshopRow): Workshop {
   };
 }
 
-async function ensureSeeded() {
+const ensureSeeded = memoizeOnce("workshops", async () => {
   await ensureSchema();
   const [{ count }] = await sql<{ count: string }[]>`SELECT COUNT(*)::text FROM workshops`;
   if (Number(count) === 0) {
-    for (let i = 0; i < placeholderWorkshops.length; i++) {
-      const w = placeholderWorkshops[i];
-      await sql`
-        INSERT INTO workshops (
-          slug, title, short_description, description, category, min_age, max_age,
-          duration, min_group_size, max_group_size, price_from, what_we_do,
-          included_items, published, featured, sort_order, meta_title, meta_description
-        )
-        VALUES (
-          ${w.slug}, ${w.title}, ${w.shortDescription}, ${w.description}, ${w.category},
-          ${w.minAge}, ${w.maxAge}, ${w.duration}, ${w.minGroupSize}, ${w.maxGroupSize},
-          ${w.priceFrom}, ${w.whatWeDo}, ${sql.json(w.includedItems)}, true, false, ${i},
-          ${w.metaTitle}, ${w.metaDescription}
-        )
-        ON CONFLICT (slug) DO NOTHING
-      `;
-    }
+    await Promise.all(
+      placeholderWorkshops.map(
+        (w, i) => sql`
+          INSERT INTO workshops (
+            slug, title, short_description, description, category, min_age, max_age,
+            duration, min_group_size, max_group_size, price_from, what_we_do,
+            included_items, published, featured, sort_order, meta_title, meta_description
+          )
+          VALUES (
+            ${w.slug}, ${w.title}, ${w.shortDescription}, ${w.description}, ${w.category},
+            ${w.minAge}, ${w.maxAge}, ${w.duration}, ${w.minGroupSize}, ${w.maxGroupSize},
+            ${w.priceFrom}, ${w.whatWeDo}, ${sql.json(w.includedItems)}, true, false, ${i},
+            ${w.metaTitle}, ${w.metaDescription}
+          )
+          ON CONFLICT (slug) DO NOTHING
+        `
+      )
+    );
   }
-}
+});
 
 export async function getWorkshops(): Promise<Workshop[]> {
   await ensureSeeded();

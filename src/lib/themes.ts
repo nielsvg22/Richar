@@ -1,4 +1,4 @@
-import { sql, ensureSchema } from "./db";
+import { sql, ensureSchema, memoizeOnce } from "./db";
 import type { Theme } from "./theme-constants";
 
 export type { Theme } from "./theme-constants";
@@ -407,7 +407,11 @@ function rowToTheme(row: ThemeRow): Theme {
   };
 }
 
-async function ensureSeeded() {
+// Memoized per warm serverless instance — without this, every single call
+// (i.e. every page render that touches themes) paid for a fresh COUNT(*)
+// round-trip to the database even though seeding only ever needs to happen
+// once.
+const ensureSeeded = memoizeOnce("themes", async () => {
   await ensureSchema();
   const [{ count }] = await sql<{ count: string }[]>`SELECT COUNT(*)::text FROM themes`;
   if (Number(count) === 0) {
@@ -421,31 +425,21 @@ async function ensureSeeded() {
     }
   }
   await ensureSeasonalThemesSeeded();
-}
+});
 
-declare global {
-  var __richarSeasonalThemesSeeded: Promise<void> | undefined;
-}
-
-async function seedSeasonalThemes() {
+const ensureSeasonalThemesSeeded = memoizeOnce("seasonalThemes", async () => {
   const [{ max }] = await sql<{ max: number | null }[]>`SELECT MAX(sort_order) as max FROM themes`;
-  let nextOrder = (max ?? -1) + 1;
-  for (const t of seasonalThemes) {
-    await sql`
-      INSERT INTO themes (slug, name, emoji, tagline, description, long_description, age_range, vanaf, gradient, activities, includes, featured, sort_order, checklist)
-      VALUES (${t.slug}, ${t.name}, ${t.emoji}, ${t.tagline}, ${t.description}, ${t.longDescription}, ${t.ageRange}, ${t.vanaf}, ${t.gradient}, ${sql.json(t.activities)}, ${sql.json(t.includes)}, ${t.featured}, ${nextOrder}, ${sql.json(DEFAULT_CHECKLIST)})
-      ON CONFLICT (slug) DO NOTHING
-    `;
-    nextOrder += 1;
-  }
-}
-
-function ensureSeasonalThemesSeeded(): Promise<void> {
-  if (!globalThis.__richarSeasonalThemesSeeded) {
-    globalThis.__richarSeasonalThemesSeeded = seedSeasonalThemes();
-  }
-  return globalThis.__richarSeasonalThemesSeeded;
-}
+  const baseOrder = (max ?? -1) + 1;
+  await Promise.all(
+    seasonalThemes.map(
+      (t, i) => sql`
+        INSERT INTO themes (slug, name, emoji, tagline, description, long_description, age_range, vanaf, gradient, activities, includes, featured, sort_order, checklist)
+        VALUES (${t.slug}, ${t.name}, ${t.emoji}, ${t.tagline}, ${t.description}, ${t.longDescription}, ${t.ageRange}, ${t.vanaf}, ${t.gradient}, ${sql.json(t.activities)}, ${sql.json(t.includes)}, ${t.featured}, ${baseOrder + i}, ${sql.json(DEFAULT_CHECKLIST)})
+        ON CONFLICT (slug) DO NOTHING
+      `
+    )
+  );
+});
 
 export async function getThemes(): Promise<Theme[]> {
   await ensureSeeded();
@@ -480,7 +474,10 @@ export async function createTheme(
     counter += 1;
   }
   const [{ max }] = await sql<{ max: number | null }[]>`SELECT MAX(sort_order) as max FROM themes`;
-  const theme: Theme = { checklist: DEFAULT_CHECKLIST, ...data, slug };
+  const cleanData = Object.fromEntries(
+    Object.entries(data).filter(([, value]) => value !== undefined)
+  ) as Omit<Theme, "slug" | "checklist"> & { checklist?: string[] };
+  const theme: Theme = { checklist: DEFAULT_CHECKLIST, ...cleanData, slug };
   await sql`
     INSERT INTO themes (slug, name, emoji, tagline, description, long_description, age_range, vanaf, gradient, activities, includes, featured, sort_order, checklist)
     VALUES (${theme.slug}, ${theme.name}, ${theme.emoji}, ${theme.tagline}, ${theme.description}, ${theme.longDescription}, ${theme.ageRange}, ${theme.vanaf}, ${theme.gradient}, ${sql.json(theme.activities)}, ${sql.json(theme.includes)}, ${theme.featured}, ${(max ?? -1) + 1}, ${sql.json(theme.checklist)})

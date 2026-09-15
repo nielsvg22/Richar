@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { sql, ensureSchema } from "./db";
+import { sql, ensureSchema, memoizeOnce } from "./db";
 
 export type SiteImageSlot = {
   id: string;
@@ -52,23 +52,28 @@ function guessContentType(filename: string): string {
   return "image/jpeg";
 }
 
-async function ensureSeededImages() {
+// Memoized per warm instance — every public page renders at least the logo
+// (layout) plus its own hero/team images, so without this a single page load
+// could fire off several unmemoized "is this seeded yet?" round-trips.
+const ensureSeededImages = memoizeOnce("siteImages", async () => {
   await ensureSchema();
   const rows = await sql<{ slot_id: string }[]>`SELECT slot_id FROM site_images`;
   const seededIds = new Set(rows.map((r) => r.slot_id));
 
-  for (const slot of SITE_IMAGE_SLOTS) {
-    if (seededIds.has(slot.id)) continue;
-    const filePath = path.join(process.cwd(), "public", "images", slot.filename);
-    if (!fs.existsSync(filePath)) continue;
-    const buffer = fs.readFileSync(filePath);
-    await sql`
-      INSERT INTO site_images (slot_id, filename, content_type, data, updated_at)
-      VALUES (${slot.id}, ${slot.filename}, ${guessContentType(slot.filename)}, ${buffer}, now())
-      ON CONFLICT (slot_id) DO NOTHING
-    `;
-  }
-}
+  await Promise.all(
+    SITE_IMAGE_SLOTS.map(async (slot) => {
+      if (seededIds.has(slot.id)) return;
+      const filePath = path.join(process.cwd(), "public", "images", slot.filename);
+      if (!fs.existsSync(filePath)) return;
+      const buffer = fs.readFileSync(filePath);
+      await sql`
+        INSERT INTO site_images (slot_id, filename, content_type, data, updated_at)
+        VALUES (${slot.id}, ${slot.filename}, ${guessContentType(slot.filename)}, ${buffer}, now())
+        ON CONFLICT (slot_id) DO NOTHING
+      `;
+    })
+  );
+});
 
 export async function siteImageExists(slot: SiteImageSlot): Promise<boolean> {
   await ensureSeededImages();
