@@ -205,6 +205,43 @@ async function migrate() {
       value TEXT NOT NULL
     )
   `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS workshops (
+      slug TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      short_description TEXT NOT NULL DEFAULT '',
+      description TEXT NOT NULL DEFAULT '',
+      category TEXT NOT NULL DEFAULT '',
+      min_age INTEGER,
+      max_age INTEGER,
+      duration TEXT NOT NULL DEFAULT '',
+      min_group_size INTEGER,
+      max_group_size INTEGER,
+      price_from INTEGER,
+      what_we_do TEXT NOT NULL DEFAULT '',
+      included_items JSONB NOT NULL DEFAULT '[]',
+      published BOOLEAN NOT NULL DEFAULT true,
+      featured BOOLEAN NOT NULL DEFAULT false,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      meta_title TEXT NOT NULL DEFAULT '',
+      meta_description TEXT NOT NULL DEFAULT '',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS workshop_images (
+      id TEXT PRIMARY KEY,
+      workshop_slug TEXT NOT NULL,
+      content_type TEXT NOT NULL,
+      data BYTEA NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS workshop_images_workshop_slug_idx ON workshop_images (workshop_slug, sort_order)`;
 }
 
 export function ensureSchema(): Promise<void> {

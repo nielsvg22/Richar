@@ -8,6 +8,7 @@ const links = [
   { href: "/admin/agenda", label: "Agenda", emoji: "🗓️", badgeKey: null },
   { href: "/admin/berichten", label: "Berichten", emoji: "📨", badgeKey: "unviewedMessages" },
   { href: "/admin/feestjes", label: "Feestjes", emoji: "🎨", badgeKey: null },
+  { href: "/admin/workshops", label: "Workshops", emoji: "🖌️", badgeKey: null },
   { href: "/admin/kortingscodes", label: "Kortingscodes", emoji: "🏷️", badgeKey: null },
   { href: "/admin/cadeaubonnen", label: "Cadeaubonnen", emoji: "🎁", badgeKey: null },
   { href: "/admin/facturen", label: "Facturen", emoji: "🧾", badgeKey: null },

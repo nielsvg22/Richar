@@ -34,6 +34,12 @@ export const SITE_IMAGE_SLOTS: SiteImageSlot[] = [
     description: "Gebruikt op de Over ons-pagina.",
     filename: "team-office.jpg",
   },
+  {
+    id: "workshops-hero",
+    label: "Workshops — Hero-afbeelding",
+    description: "Grote foto rechts bovenaan de workshops-pagina.",
+    filename: "workshops-hero.jpg",
+  },
 ];
 
 export function getSiteImageSlot(id: string): SiteImageSlot | undefined {
